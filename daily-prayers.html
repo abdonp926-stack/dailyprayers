@@ -347,6 +347,52 @@
       .resource-card { padding: 0.9rem 0.7rem; }
       .resource-card h3 { font-size: 0.8rem; }
     }
+
+    /* Readings section */
+    .reading-section {
+      margin-top: 1.25rem;
+    }
+
+    .reading-section h3 {
+      font-size: 0.92rem;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .reading-ref {
+      font-size: 0.85rem;
+      color: var(--gold-dim);
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .reading-text {
+      font-size: 1.12rem;
+      color: #c5c0b8;
+      line-height: 1.8;
+    }
+
+    .readings-fallback {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .readings-fallback a {
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .readings-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
   </style>
 </head>
 <body>
@@ -359,6 +405,7 @@
 
 <nav>
   <a href="#daily-resources">Today</a>
+  <a href="#readings-card">Readings</a>
   <a href="#prayer-before-mass">Before Mass</a>
   <a href="#thanksgiving">After Mass</a>
   <a href="#divine-mercy">Divine Mercy</a>
@@ -374,12 +421,25 @@
       <span class="resource-detail" id="bible-day-label">Day --</span>
       <span class="resource-sub">Fr. Mike Schmitz</span>
     </a>
-    <a class="resource-card" href="https://bible.usccb.org/daily-bible-reading" target="_blank" rel="noopener">
+    <a class="resource-card" id="readings-link" href="https://bible.usccb.org/daily-bible-reading" target="_blank" rel="noopener">
       <span class="resource-icon">📜</span>
       <h3>Daily Mass Readings</h3>
       <span class="resource-detail" id="today-date-label">--</span>
       <span class="resource-sub">USCCB</span>
     </a>
+  </div>
+
+  <!-- Daily Mass Readings (inline) -->
+  <div class="prayer-card" id="readings-card">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Daily Mass Readings<span class="subtitle" id="readings-date-subtitle">Loading...</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content" id="readings-content">
+        <p class="instruction" id="readings-loading">Loading today's readings...</p>
+      </div>
+    </div>
   </div>
 
   <button class="toggle-all" onclick="toggleAll()">Expand All</button>
@@ -557,6 +617,119 @@
     // Set today's date label
     const options = { weekday: 'long', month: 'long', day: 'numeric' };
     document.getElementById('today-date-label').textContent = now.toLocaleDateString('en-US', options);
+  })();
+
+  // Fetch daily Mass readings from USCCB
+  (function() {
+    const now = new Date();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const yy = String(now.getFullYear()).slice(-2);
+    const usccbUrl = 'https://bible.usccb.org/bible/readings/' + mm + dd + yy + '.cfm';
+
+    const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-US', options);
+    document.getElementById('readings-date-subtitle').textContent = dateStr;
+
+    // Update the resource card link to point to today's specific readings
+    document.getElementById('readings-link').href = usccbUrl;
+
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(usccbUrl);
+
+    fetch(proxyUrl)
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (!data || !data.contents) throw new Error('No content');
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, 'text/html');
+
+        // Extract reading sections
+        const contentEl = document.getElementById('readings-content');
+        contentEl.innerHTML = '';
+
+        const blocks = doc.querySelectorAll('.b-verse, .content-body');
+        let sections = [];
+
+        // Try to find reading headers and their content
+        const headers = doc.querySelectorAll('h3.name, h4.name');
+        const allContent = doc.querySelectorAll('.content-body .address, .content-body .verse');
+
+        // Parse the page structure - look for reading sections
+        const readingBodies = doc.querySelectorAll('.content-body');
+        if (readingBodies.length > 0) {
+          readingBodies.forEach(function(body) {
+            var section = document.createElement('div');
+            section.className = 'reading-section';
+
+            // Get the heading (reading label)
+            var heading = body.closest('.section')
+              ? body.closest('.section').querySelector('h3, h4')
+              : null;
+
+            // Get the address (scripture reference)
+            var address = body.querySelector('.address');
+
+            if (heading) {
+              var h3 = document.createElement('h3');
+              h3.textContent = heading.textContent.trim();
+              section.appendChild(h3);
+            }
+
+            if (address) {
+              var ref = document.createElement('p');
+              ref.className = 'reading-ref';
+              ref.textContent = address.textContent.trim();
+              section.appendChild(ref);
+            }
+
+            // Get verses
+            var verses = body.querySelectorAll('.verse');
+            if (verses.length > 0) {
+              var p = document.createElement('p');
+              p.className = 'reading-text';
+              var textParts = [];
+              verses.forEach(function(v) {
+                textParts.push(v.textContent.trim());
+              });
+              p.textContent = textParts.join(' ');
+              section.appendChild(p);
+            } else {
+              // Fallback: get all text content from the body
+              var text = body.textContent.trim();
+              if (text && text.length > 20) {
+                var p = document.createElement('p');
+                p.className = 'reading-text';
+                p.textContent = text;
+                section.appendChild(p);
+              }
+            }
+
+            if (section.children.length > 0) {
+              var divider = document.createElement('div');
+              divider.className = 'readings-divider';
+              contentEl.appendChild(divider);
+              contentEl.appendChild(section);
+            }
+          });
+        }
+
+        // If nothing was parsed, show fallback
+        if (contentEl.children.length === 0) {
+          throw new Error('Could not parse readings');
+        }
+
+        // Add a "View on USCCB" link at the bottom
+        var fallback = document.createElement('div');
+        fallback.className = 'readings-fallback';
+        fallback.style.marginTop = '1.5rem';
+        fallback.innerHTML = '<a href="' + usccbUrl + '" target="_blank" rel="noopener">View full readings on USCCB &rarr;</a>';
+        contentEl.appendChild(fallback);
+      })
+      .catch(function(err) {
+        var contentEl = document.getElementById('readings-content');
+        contentEl.innerHTML = '<p class="instruction">Could not load today\'s readings automatically.</p>' +
+          '<div class="readings-fallback"><a href="' + usccbUrl + '" target="_blank" rel="noopener">Tap here to read today\'s readings on USCCB &rarr;</a></div>';
+      });
   })();
 
   // Smooth scroll for nav links

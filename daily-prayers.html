@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Daily Prayers">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a1e">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1a1e'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='%23c9a84c'>✝</text></svg>">
+  <title>Daily Catholic Prayers</title>
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-dim: #a68a3e;
+      --bg: #1a1a1e;
+      --bg-card: #242428;
+      --bg-header: #131316;
+      --bg-nav: #1e1e22;
+      --bg-instruction: #2a2a2f;
+      --text: #d8d4ce;
+      --text-light: #9a9590;
+      --border: #333338;
+      --shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f0f12 0%, #1c1a20 100%);
+      color: var(--text);
+      text-align: center;
+      padding: 2rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px var(--shadow);
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+      color: var(--gold);
+    }
+
+    header p {
+      font-size: 0.85rem;
+      opacity: 0.5;
+      font-style: italic;
+    }
+
+    .cross {
+      font-size: 1.6rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      opacity: 0.6;
+      color: var(--gold);
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--bg-nav);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--text-light);
+      font-size: 0.8rem;
+      padding: 0.4rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    nav a:hover, nav a:active {
+      background: var(--gold);
+      color: var(--bg);
+      border-color: var(--gold);
+    }
+
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1rem 1rem 4rem;
+    }
+
+    .prayer-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      margin: 1.25rem 0;
+      box-shadow: 0 1px 6px var(--shadow);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .prayer-header {
+      cursor: pointer;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid var(--gold-dim);
+      transition: background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .prayer-header:hover {
+      background: #2c2c31;
+    }
+
+    .prayer-header h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      padding-right: 1rem;
+    }
+
+    .prayer-header .subtitle {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: var(--text-light);
+      margin-top: 0.2rem;
+      font-style: italic;
+    }
+
+    .chevron {
+      font-size: 1.2rem;
+      color: var(--gold);
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .prayer-card.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .prayer-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+
+    .prayer-card.open .prayer-body {
+      max-height: 5000px;
+    }
+
+    .prayer-content {
+      padding: 0 1.5rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .prayer-content p {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .prayer-content .prayer-text {
+      font-style: italic;
+      color: #c5c0b8;
+    }
+
+    .prayer-content .instruction {
+      font-style: normal;
+      color: var(--text-light);
+      font-size: 0.88rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-instruction);
+      padding: 0.6rem 0.9rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+
+    .prayer-content h3 {
+      font-size: 0.92rem;
+      color: var(--gold);
+      margin-top: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .prayer-content .step {
+      margin-top: 1rem;
+      padding-left: 0;
+    }
+
+    .prayer-content .step-label {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .glory-be {
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--text-light);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    .repeat-note {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--gold);
+      font-weight: 600;
+      margin-top: 0.75rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.25rem 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--text-light);
+      font-size: 0.78rem;
+      font-style: italic;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      header { padding: 1.5rem 1rem; }
+      header h1 { font-size: 1.25rem; }
+      nav a { font-size: 0.75rem; padding: 0.35rem 0.7rem; }
+      .prayer-header { padding: 1rem 1.1rem; }
+      .prayer-header h2 { font-size: 0.95rem; }
+      .prayer-content { padding: 0 1.1rem 1.25rem; }
+      .prayer-content p { font-size: 0.9rem; }
+      main { padding: 0.75rem 0.5rem 3rem; }
+    }
+
+    /* Expand/collapse all button */
+    .toggle-all {
+      display: block;
+      margin: 0.5rem auto;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-light);
+      font-size: 0.78rem;
+      padding: 0.35rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    .toggle-all:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="cross">✝</span>
+  <h1>Daily Prayers</h1>
+  <p>In nomine Patris, et Filii, et Spiritus Sancti</p>
+</header>
+
+<nav>
+  <a href="#prayer-before-mass">Before Mass</a>
+  <a href="#thanksgiving">After Mass</a>
+  <a href="#divine-mercy">Divine Mercy</a>
+  <a href="#sacred-heart">Sacred Heart</a>
+</nav>
+
+<main>
+  <button class="toggle-all" onclick="toggleAll()">Expand All</button>
+
+  <!-- 1. Prayer Before Mass -->
+  <div class="prayer-card" id="prayer-before-mass">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Prayer Before Mass<span class="subtitle">St. Thomas Aquinas</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Almighty and ever-living God, I approach the sacrament of Your only-begotten Son Our Lord Jesus Christ. I come sick to the doctor of life, unclean to the fountain of mercy, blind to the radiance of eternal light, and poor and needy to the Lord of heaven and earth.</p>
+        <p class="prayer-text">Lord, in Your great generosity, heal my sickness, wash away my defilement, enlighten my blindness, enrich my poverty, and clothe my nakedness.</p>
+        <p class="prayer-text">May I receive the bread of angels, the King of kings and Lord of lords, with humble reverence, with the purity and faith, the repentance and love, and the determined purpose that will help to bring me to salvation.</p>
+        <p class="prayer-text">May I receive the sacrament of the Lord's Body and Blood, and its reality and power.</p>
+        <p class="prayer-text">Kind God, may I receive the Body of Your only-begotten Son, our Lord Jesus Christ, born from the womb of the Virgin Mary, and so be received into His mystical body and numbered among His members.</p>
+        <p class="prayer-text">Loving Father, as on my earthly pilgrimage I now receive Your beloved Son under the veil of a sacrament, may I one day see Him face to face in glory, who lives and reigns with You forever.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Prayer After Mass -->
+  <div class="prayer-card" id="thanksgiving">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Prayer of Thanksgiving After Mass<span class="subtitle">St. Thomas Aquinas</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Lord, Father all-powerful and ever-living God, I thank You, for even though I am a sinner, your unprofitable servant, not because of my worth but in the kindness of your mercy, You have fed me with the Precious Body &amp; Blood of Your Son, our Lord Jesus Christ.</p>
+        <p class="prayer-text">I pray that this Holy Communion may not bring me condemnation and punishment but forgiveness and salvation. May it be a helmet of faith and a shield of good will. May it purify me from evil ways and put an end to my evil passions. May it bring me charity and patience, humility and obedience, and growth in the power to do good. May it be my strong defense against all my enemies, visible and invisible, and the perfect calming of all my evil impulses, bodily and spiritual. May it unite me more closely to you, the One true God, and lead me safely through death to everlasting happiness with You.</p>
+        <p class="prayer-text">And I pray that You will lead me, a sinner, to the banquet where you, with Your Son and holy Spirit, are true and perfect light, total fulfillment, everlasting joy, gladness without end, and perfect happiness to your saints. Grant this through Christ our Lord,</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Chaplet of Divine Mercy -->
+  <div class="prayer-card" id="divine-mercy">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Chaplet of Divine Mercy<span class="subtitle">Prayed on Rosary Beads</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+
+        <h3>Opening</h3>
+        <p class="instruction">Begin with the Sign of the Cross.</p>
+
+        <div class="step">
+          <span class="step-label">Optional Opening Prayer</span>
+          <p class="prayer-text">You expired, Jesus, but the source of life gushed forth for souls, and the ocean of mercy opened up for the whole world. O Fount of Life, unfathomable Divine Mercy, envelop the whole world and empty Yourself out upon us.</p>
+        </div>
+
+        <div class="step">
+          <span class="step-label">Repeat 3 times</span>
+          <p class="prayer-text">O Blood and Water, which gushed forth from the Heart of Jesus as a fountain of Mercy for us, I trust in You!</p>
+        </div>
+
+        <p class="instruction">Then pray one Our Father, one Hail Mary, and the Apostles' Creed.</p>
+
+        <div class="divider"></div>
+        <h3>The Five Decades</h3>
+
+        <div class="step">
+          <span class="step-label">On each "Our Father" bead</span>
+          <p class="prayer-text">Eternal Father, I offer You the Body and Blood, Soul and Divinity of Your dearly beloved Son, Our Lord Jesus Christ, in atonement for our sins and those of the whole world.</p>
+        </div>
+
+        <div class="step">
+          <span class="step-label">On each of the 10 "Hail Mary" beads</span>
+          <p class="prayer-text">For the sake of His sorrowful Passion, have mercy on us and on the whole world.</p>
+        </div>
+
+        <p class="repeat-note">↻ Repeat for all five decades</p>
+
+        <div class="divider"></div>
+        <h3>Closing</h3>
+
+        <div class="step">
+          <span class="step-label">Repeat 3 times</span>
+          <p class="prayer-text">Holy God, Holy Mighty One, Holy Immortal One, have mercy on us and on the whole world.</p>
+        </div>
+
+        <div class="step">
+          <span class="step-label">Optional Closing Prayer</span>
+          <p class="prayer-text">Eternal God, in whom mercy is endless and the treasury of compassion inexhaustible, look kindly upon us, and increase Your mercy in us, that in difficult moments, we might not despair nor become despondent, but with great confidence, submit ourselves to Your holy will, which is Love and Mercy itself.</p>
+        </div>
+
+        <p class="instruction">End with the Sign of the Cross.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Offering to the Sacred Heart -->
+  <div class="prayer-card" id="sacred-heart">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Offering to the Sacred Heart<span class="subtitle">Three Intentions with Glory Be</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Eternal Father, I offer Thee the Sacred Heart of Jesus, with all its love, all its sufferings and all its merits.</p>
+
+        <div class="step">
+          <span class="step-label">First</span>
+          <p class="prayer-text">To expiate all the sins I have committed this day and during all my life.</p>
+          <p class="glory-be">Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be, world without end. Amen.</p>
+        </div>
+
+        <div class="step">
+          <span class="step-label">Second</span>
+          <p class="prayer-text">To purify the good I have done poorly this day and during all my life.</p>
+          <p class="glory-be">Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be, world without end. Amen.</p>
+        </div>
+
+        <div class="step">
+          <span class="step-label">Third</span>
+          <p class="prayer-text">To supply for the good I ought to have done, and that I have neglected this day and all my life.</p>
+          <p class="glory-be">Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be, world without end. Amen.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>✝ Ad Maiorem Dei Gloriam ✝</p>
+</footer>
+
+<script>
+  function toggle(header) {
+    const card = header.closest('.prayer-card');
+    card.classList.toggle('open');
+    updateToggleButton();
+  }
+
+  function toggleAll() {
+    const cards = document.querySelectorAll('.prayer-card');
+    const btn = document.querySelector('.toggle-all');
+    const allOpen = [...cards].every(c => c.classList.contains('open'));
+
+    cards.forEach(card => {
+      if (allOpen) {
+        card.classList.remove('open');
+      } else {
+        card.classList.add('open');
+      }
+    });
+    updateToggleButton();
+  }
+
+  function updateToggleButton() {
+    const cards = document.querySelectorAll('.prayer-card');
+    const btn = document.querySelector('.toggle-all');
+    const allOpen = [...cards].every(c => c.classList.contains('open'));
+    btn.textContent = allOpen ? 'Collapse All' : 'Expand All';
+  }
+
+  // Smooth scroll for nav links
+  document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      const card = target;
+      if (!card.classList.contains('open')) {
+        card.classList.add('open');
+        updateToggleButton();
+      }
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+
+</body>
+</html>

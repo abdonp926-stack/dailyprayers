@@ -619,7 +619,9 @@
     document.getElementById('today-date-label').textContent = now.toLocaleDateString('en-US', options);
   })();
 
-  // Fetch daily Mass readings from Catholic Readings API (GitHub Pages - no CORS issues)
+  // Fetch daily Mass readings:
+  // 1) Catholic Readings API (GitHub Pages) → get scripture references
+  // 2) bible-api.com → get full passage text for each reference (World English Bible, public domain)
   (function() {
     const now = new Date();
     const yyyy = now.getFullYear();
@@ -628,15 +630,82 @@
     const yy = String(yyyy).slice(-2);
     const usccbUrl = 'https://bible.usccb.org/bible/readings/' + mm + dd + yy + '.cfm';
 
-    const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-US', options);
+    const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-US', dateOptions);
     document.getElementById('readings-date-subtitle').textContent = dateStr;
-
-    // Update the resource card link to point to today's specific readings
     document.getElementById('readings-link').href = usccbUrl;
 
-    // Use the free Catholic Readings API on GitHub Pages
+    // Catholic Readings API gives us the scripture references for today
     const apiUrl = 'https://cpbjr.github.io/catholic-readings-api/readings/' + yyyy + '/' + mm + '-' + dd + '.json';
+
+    // Convert a reference like "Psalm 42:2, 3; 43:3, 4" into fetchable queries
+    // bible-api.com wants formats like "Psalm42:2-3" or "Psalm43:3-4"
+    function refToQueries(ref) {
+      var parts = ref.split(';');
+      var queries = [];
+      var currentBook = '';
+
+      parts.forEach(function(part) {
+        part = part.trim();
+        if (!part) return;
+
+        // Check if this part starts with a book name (e.g., "2 Kings 5:1-15ab", "Luke 4:24-30")
+        var bookMatch = part.match(/^(\d?\s*[A-Za-z]+)\s+([\d].*)/);
+        if (bookMatch) {
+          currentBook = bookMatch[1].replace(/\s+/g, '');
+          var chapterVerse = bookMatch[2].trim();
+        } else if (/^\d/.test(part)) {
+          // No book name, starts with digit — reuse current book (e.g., '43:3, 4')
+          var chapterVerse = part.trim();
+        } else {
+          return;
+        }
+
+        if (!currentBook || !chapterVerse) return;
+
+        // Remove trailing letter suffixes like '15ab' (lowercase only to preserve book names)
+        chapterVerse = chapterVerse.replace(/[a-z]+/g, '');
+
+        // Handle range format like "5:1-15" directly
+        var rangeMatch = chapterVerse.match(/^(\d+):(\d+)-(\d+)$/);
+        if (rangeMatch) {
+          queries.push(currentBook + rangeMatch[1] + ':' + rangeMatch[2] + '-' + rangeMatch[3]);
+          return;
+        }
+
+        // Handle comma-separated verses like "42:2, 3"
+        var cvMatch = chapterVerse.match(/^(\d+):(.+)/);
+        if (cvMatch) {
+          var chapter = cvMatch[1];
+          var verses = cvMatch[2].trim();
+          var verseNums = verses.split(/[,\s]+/).filter(Boolean).map(Number).filter(function(n) { return !isNaN(n); });
+          if (verseNums.length >= 2) {
+            queries.push(currentBook + chapter + ':' + Math.min.apply(null, verseNums) + '-' + Math.max.apply(null, verseNums));
+          } else if (verseNums.length === 1) {
+            queries.push(currentBook + chapter + ':' + verseNums[0]);
+          }
+        } else {
+          queries.push(currentBook + chapterVerse);
+        }
+      });
+      return queries;
+    }
+
+    function fetchPassage(ref) {
+      var queries = refToQueries(ref);
+      if (queries.length === 0) return Promise.resolve('');
+
+      var fetches = queries.map(function(q) {
+        return fetch('https://bible-api.com/' + encodeURIComponent(q) + '?translation=web')
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(d) { return d && d.text ? d.text.trim() : ''; })
+          .catch(function() { return ''; });
+      });
+
+      return Promise.all(fetches).then(function(texts) {
+        return texts.filter(Boolean).join('\n\n');
+      });
+    }
 
     fetch(apiUrl)
       .then(function(response) {
@@ -644,10 +713,6 @@
         return response.json();
       })
       .then(function(data) {
-        const contentEl = document.getElementById('readings-content');
-        contentEl.innerHTML = '';
-
-        // API structure: data.readings = { firstReading, psalm, secondReading, gospel }
         var readings = data.readings || {};
         var readingOrder = [
           { key: 'firstReading', label: 'First Reading' },
@@ -656,56 +721,67 @@
           { key: 'gospel', label: 'Gospel' }
         ];
 
-        var hasContent = false;
+        // Filter to only readings that exist
+        var available = readingOrder.filter(function(item) {
+          return readings[item.key];
+        });
 
-        readingOrder.forEach(function(item) {
-          var reading = readings[item.key];
-          if (!reading) return;
+        if (available.length === 0) throw new Error('No readings found');
 
-          hasContent = true;
+        // Fetch all passage texts in parallel
+        var passageFetches = available.map(function(item) {
+          return fetchPassage(readings[item.key]);
+        });
+
+        return Promise.all(passageFetches).then(function(texts) {
+          return { data: data, available: available, texts: texts };
+        });
+      })
+      .then(function(result) {
+        var data = result.data;
+        var available = result.available;
+        var texts = result.texts;
+        var readings = data.readings;
+
+        var contentEl = document.getElementById('readings-content');
+        contentEl.innerHTML = '';
+
+        // Show liturgical season
+        if (data.season) {
+          var info = document.createElement('p');
+          info.className = 'instruction';
+          info.textContent = data.season;
+          contentEl.appendChild(info);
+        }
+
+        available.forEach(function(item, i) {
+          var divider = document.createElement('div');
+          divider.className = 'readings-divider';
+          contentEl.appendChild(divider);
+
           var section = document.createElement('div');
           section.className = 'reading-section';
 
           var h3 = document.createElement('h3');
-          h3.textContent = reading.title || item.label;
+          h3.textContent = item.label;
           section.appendChild(h3);
 
-          // Scripture reference
-          var ref = reading.reference || reading.ref || reading.citation || '';
-          if (ref) {
-            var refEl = document.createElement('p');
-            refEl.className = 'reading-ref';
-            refEl.textContent = ref;
-            section.appendChild(refEl);
-          }
+          var refEl = document.createElement('p');
+          refEl.className = 'reading-ref';
+          refEl.textContent = readings[item.key];
+          section.appendChild(refEl);
 
-          // Reading text
-          var text = reading.text || reading.content || '';
-          if (text) {
+          if (texts[i]) {
             var p = document.createElement('p');
             p.className = 'reading-text';
-            p.textContent = text;
+            p.textContent = texts[i];
             section.appendChild(p);
           }
 
-          var divider = document.createElement('div');
-          divider.className = 'readings-divider';
-          contentEl.appendChild(divider);
           contentEl.appendChild(section);
         });
 
-        if (!hasContent) throw new Error('No readings found');
-
-        // Show liturgical season/celebration if available
-        var seasonInfo = data.season || '';
-        if (seasonInfo) {
-          var info = document.createElement('p');
-          info.className = 'instruction';
-          info.textContent = seasonInfo;
-          contentEl.insertBefore(info, contentEl.firstChild);
-        }
-
-        // Add "View on USCCB" link at the bottom
+        // USCCB link at bottom
         var fallbackDiv = document.createElement('div');
         fallbackDiv.className = 'readings-fallback';
         fallbackDiv.style.marginTop = '1.5rem';
@@ -713,7 +789,6 @@
         contentEl.appendChild(fallbackDiv);
       })
       .catch(function(err) {
-        // Fallback: link directly to USCCB
         var contentEl = document.getElementById('readings-content');
         contentEl.innerHTML = '<p class="instruction">Could not load today\'s readings automatically.</p>' +
           '<div class="readings-fallback"><a href="' + usccbUrl + '" target="_blank" rel="noopener">Tap here to read today\'s readings on USCCB &rarr;</a></div>';

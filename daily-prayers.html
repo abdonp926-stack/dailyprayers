@@ -291,7 +291,7 @@
     /* Daily Resources Section */
     .daily-resources {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 0.75rem;
       margin: 1.25rem 0;
     }
@@ -420,12 +420,6 @@
       <h3>Bible in a Year</h3>
       <span class="resource-detail" id="bible-day-label">Day --</span>
       <span class="resource-sub">Fr. Mike Schmitz</span>
-    </a>
-    <a class="resource-card" id="readings-link" href="https://bible.usccb.org/daily-bible-reading" target="_blank" rel="noopener">
-      <span class="resource-icon">📜</span>
-      <h3>Daily Mass Readings</h3>
-      <span class="resource-detail" id="today-date-label">--</span>
-      <span class="resource-sub">USCCB</span>
     </a>
   </div>
 
@@ -614,9 +608,6 @@
     document.getElementById('bible-year-link').href = 'https://www.youtube.com/results?search_query=' + searchQuery;
     document.getElementById('bible-day-label').textContent = 'Day ' + dayOfYear;
 
-    // Set today's date label
-    const options = { weekday: 'long', month: 'long', day: 'numeric' };
-    document.getElementById('today-date-label').textContent = now.toLocaleDateString('en-US', options);
   })();
 
   // Fetch daily Mass readings:
@@ -633,7 +624,6 @@
     const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     const dateStr = now.toLocaleDateString('en-US', dateOptions);
     document.getElementById('readings-date-subtitle').textContent = dateStr;
-    document.getElementById('readings-link').href = usccbUrl;
 
     // Catholic Readings API gives us the scripture references for today
     const apiUrl = 'https://cpbjr.github.io/catholic-readings-api/readings/' + yyyy + '/' + mm + '-' + dd + '.json';

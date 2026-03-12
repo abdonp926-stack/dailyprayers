@@ -628,8 +628,8 @@
     // Catholic Readings API gives us the scripture references for today
     const apiUrl = 'https://cpbjr.github.io/catholic-readings-api/readings/' + yyyy + '/' + mm + '-' + dd + '.json';
 
-    // Convert a reference like "Psalm 42:2, 3; 43:3, 4" into fetchable queries
-    // bible-api.com wants formats like "Psalm42:2-3" or "Psalm43:3-4"
+    // Convert references like "Deuteronomy 4:1, 5-9" or "Psalm 147:12-13, 15-16, 19-20"
+    // into bible-api.com queries: ["Deuteronomy4:1", "Deuteronomy4:5-9"] etc.
     function refToQueries(ref) {
       var parts = ref.split(';');
       var queries = [];
@@ -639,41 +639,36 @@
         part = part.trim();
         if (!part) return;
 
-        // Check if this part starts with a book name (e.g., "2 Kings 5:1-15ab", "Luke 4:24-30")
+        var chapterVerse;
         var bookMatch = part.match(/^(\d?\s*[A-Za-z]+)\s+([\d].*)/);
         if (bookMatch) {
           currentBook = bookMatch[1].replace(/\s+/g, '');
-          var chapterVerse = bookMatch[2].trim();
+          chapterVerse = bookMatch[2].trim();
         } else if (/^\d/.test(part)) {
-          // No book name, starts with digit — reuse current book (e.g., '43:3, 4')
-          var chapterVerse = part.trim();
+          chapterVerse = part.trim();
         } else {
           return;
         }
 
         if (!currentBook || !chapterVerse) return;
 
-        // Remove trailing letter suffixes like '15ab' (lowercase only to preserve book names)
+        // Remove trailing letter suffixes like '15ab'
         chapterVerse = chapterVerse.replace(/[a-z]+/g, '');
 
-        // Handle range format like "5:1-15" directly
-        var rangeMatch = chapterVerse.match(/^(\d+):(\d+)-(\d+)$/);
-        if (rangeMatch) {
-          queries.push(currentBook + rangeMatch[1] + ':' + rangeMatch[2] + '-' + rangeMatch[3]);
-          return;
-        }
-
-        // Handle comma-separated verses like "42:2, 3"
+        // Parse chapter:verses — verses can be "1, 5-9" or "12-13, 15-16, 19-20"
         var cvMatch = chapterVerse.match(/^(\d+):(.+)/);
         if (cvMatch) {
           var chapter = cvMatch[1];
-          var verses = cvMatch[2].trim();
-          var verseNums = verses.split(/[,\s]+/).filter(Boolean).map(Number).filter(function(n) { return !isNaN(n); });
-          if (verseNums.length >= 2) {
-            queries.push(currentBook + chapter + ':' + Math.min.apply(null, verseNums) + '-' + Math.max.apply(null, verseNums));
-          } else if (verseNums.length === 1) {
-            queries.push(currentBook + chapter + ':' + verseNums[0]);
-          }
+          var segments = cvMatch[2].split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+          segments.forEach(function(seg) {
+            var rangeMatch = seg.match(/^(\d+)-(\d+)$/);
+            var singleMatch = seg.match(/^(\d+)$/);
+            if (rangeMatch) {
+              queries.push(currentBook + chapter + ':' + rangeMatch[1] + '-' + rangeMatch[2]);
+            } else if (singleMatch) {
+              queries.push(currentBook + chapter + ':' + singleMatch[1]);
+            }
+          });
         } else {
           queries.push(currentBook + chapterVerse);
         }

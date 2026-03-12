@@ -291,7 +291,7 @@
     /* Daily Resources Section */
     .daily-resources {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 0.75rem;
       margin: 1.25rem 0;
     }
@@ -348,51 +348,6 @@
       .resource-card h3 { font-size: 0.8rem; }
     }
 
-    /* Readings section */
-    .reading-section {
-      margin-top: 1.25rem;
-    }
-
-    .reading-section h3 {
-      font-size: 0.92rem;
-      color: var(--gold);
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 600;
-    }
-
-    .reading-ref {
-      font-size: 0.85rem;
-      color: var(--gold-dim);
-      font-weight: 600;
-      margin-bottom: 0.4rem;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-
-    .reading-text {
-      font-size: 1.12rem;
-      color: #c5c0b8;
-      line-height: 1.8;
-    }
-
-    .readings-fallback {
-      text-align: center;
-      margin-top: 1rem;
-    }
-
-    .readings-fallback a {
-      color: var(--gold);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-
-    .readings-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 1.5rem 0;
-    }
   </style>
 </head>
 <body>
@@ -405,7 +360,6 @@
 
 <nav>
   <a href="#daily-resources">Today</a>
-  <a href="#readings-card">Readings</a>
   <a href="#prayer-before-mass">Before Mass</a>
   <a href="#thanksgiving">After Mass</a>
   <a href="#divine-mercy">Divine Mercy</a>
@@ -421,20 +375,14 @@
       <span class="resource-detail" id="bible-day-label">Day --</span>
       <span class="resource-sub">Fr. Mike Schmitz</span>
     </a>
+    <a class="resource-card" id="readings-link" href="#" target="_blank" rel="noopener">
+      <span class="resource-icon">📜</span>
+      <h3>Daily Mass Readings</h3>
+      <span class="resource-detail" id="readings-date-label">Loading...</span>
+      <span class="resource-sub">The Word Today TV</span>
+    </a>
   </div>
 
-  <!-- Daily Mass Readings (inline) -->
-  <div class="prayer-card" id="readings-card">
-    <div class="prayer-header" onclick="toggle(this)">
-      <h2>Daily Mass Readings<span class="subtitle" id="readings-date-subtitle">Loading...</span></h2>
-      <span class="chevron">▾</span>
-    </div>
-    <div class="prayer-body">
-      <div class="prayer-content" id="readings-content">
-        <p class="instruction" id="readings-loading">Loading today's readings...</p>
-      </div>
-    </div>
-  </div>
 
   <button class="toggle-all" onclick="toggleAll()">Expand All</button>
 
@@ -610,158 +558,18 @@
 
   })();
 
-  // Fetch daily Mass readings from USCCB (NAB translation with liturgical introductions)
-  // Uses multiple CORS proxies as fallbacks for reliability
+  // Set Daily Mass Readings link (YouTube search for The Word Today TV)
   (function() {
     var now = new Date();
-    var yyyy = now.getFullYear();
-    var mm = String(now.getMonth() + 1).padStart(2, '0');
-    var dd = String(now.getDate()).padStart(2, '0');
-    var yy = String(yyyy).slice(-2);
-    var usccbUrl = 'https://bible.usccb.org/bible/readings/' + mm + dd + yy + '.cfm';
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var monthName = months[now.getMonth()];
+    var day = now.getDate();
+    var year = now.getFullYear();
+    var dateStr = monthName + ' ' + day + ', ' + year;
 
-    var dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-    var dateStr = now.toLocaleDateString('en-US', dateOptions);
-    document.getElementById('readings-date-subtitle').textContent = dateStr;
-
-    // Multiple CORS proxies for reliability — if one is down, try the next
-    var proxies = [
-      function(url) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url); },
-      function(url) { return 'https://corsproxy.io/?' + encodeURIComponent(url); },
-      function(url) { return 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url); }
-    ];
-
-    // Parse USCCB HTML and extract reading sections
-    function parseReadings(html) {
-      var parser = new DOMParser();
-      var doc = parser.parseFromString(html, 'text/html');
-      var main = doc.querySelector('#block-usccb-readings-content') || doc.querySelector('main') || doc.body;
-      var headings = main.querySelectorAll('h3');
-      var sections = [];
-
-      headings.forEach(function(h3) {
-        var title = h3.textContent.trim();
-
-        if (title === 'Reading 1' || title === 'Reading I' || title === 'First Reading') title = 'First Reading';
-        else if (title === 'Reading 2' || title === 'Reading II' || title === 'Second Reading') title = 'Second Reading';
-        else if (title.indexOf('Responsorial') !== -1) title = 'Responsorial Psalm';
-        else if (title.indexOf('Gospel') !== -1 && title.indexOf('Verse Before') === -1 && title.indexOf('Alleluia') === -1) title = 'Gospel';
-        else if (title.indexOf('Alleluia') !== -1 || title.indexOf('Verse Before') !== -1) return;
-        else return;
-
-        var ref = '';
-        var textContent = '';
-        var el = h3.nextElementSibling;
-
-        while (el) {
-          if (el.tagName === 'H3' || el.tagName === 'H2') break;
-
-          if (el.tagName === 'A' && !ref) {
-            ref = el.textContent.trim();
-          }
-
-          if ((el.tagName === 'DIV' || el.tagName === 'P' || el.tagName === 'SPAN') &&
-              el.textContent.trim().length > 20) {
-            var txt = el.textContent.trim();
-            if (txt.indexOf('LISTEN') === -1 && txt.indexOf('En Español') === -1 &&
-                txt.indexOf('View Calendar') === -1 && txt.indexOf('Lectionary for Mass') === -1 &&
-                txt.indexOf('Get Daily Readings') === -1 && txt.indexOf('SUBSCRIBE') === -1 &&
-                txt !== ref) {
-              var hasForm = el.querySelector && (el.querySelector('form') || el.querySelector('input') || el.querySelector('button'));
-              if (!hasForm) {
-                if (textContent) { textContent += '\n\n' + txt; }
-                else { textContent = txt; }
-              }
-            }
-          }
-
-          el = el.nextElementSibling;
-        }
-
-        if (ref || textContent) {
-          sections.push({ title: title, ref: ref, text: textContent.trim() });
-        }
-      });
-
-      return sections;
-    }
-
-    // Render parsed readings into the page
-    function renderReadings(sections) {
-      var contentEl = document.getElementById('readings-content');
-      contentEl.innerHTML = '';
-
-      sections.forEach(function(reading) {
-        var divider = document.createElement('div');
-        divider.className = 'readings-divider';
-        contentEl.appendChild(divider);
-
-        var section = document.createElement('div');
-        section.className = 'reading-section';
-
-        var h3 = document.createElement('h3');
-        h3.textContent = reading.title;
-        section.appendChild(h3);
-
-        if (reading.ref) {
-          var refEl = document.createElement('p');
-          refEl.className = 'reading-ref';
-          refEl.textContent = reading.ref;
-          section.appendChild(refEl);
-        }
-
-        if (reading.text) {
-          var p = document.createElement('p');
-          p.className = 'reading-text';
-          p.textContent = reading.text;
-          section.appendChild(p);
-        }
-
-        contentEl.appendChild(section);
-      });
-
-      var fallbackDiv = document.createElement('div');
-      fallbackDiv.className = 'readings-fallback';
-      fallbackDiv.style.marginTop = '1.5rem';
-      fallbackDiv.innerHTML = '<a href="' + usccbUrl + '" target="_blank" rel="noopener">View full readings on USCCB &rarr;</a>';
-      contentEl.appendChild(fallbackDiv);
-    }
-
-    // Show error fallback
-    function showFallback() {
-      var contentEl = document.getElementById('readings-content');
-      contentEl.innerHTML = '<p class="instruction">Could not load today\'s readings automatically.</p>' +
-        '<div class="readings-fallback"><a href="' + usccbUrl + '" target="_blank" rel="noopener">Tap here to read today\'s readings on USCCB &rarr;</a></div>';
-    }
-
-    // Try each proxy in sequence until one works
-    function tryProxy(index) {
-      if (index >= proxies.length) {
-        showFallback();
-        return;
-      }
-
-      var proxyUrl = proxies[index](usccbUrl);
-
-      fetch(proxyUrl, { signal: AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined })
-        .then(function(response) {
-          if (!response.ok) throw new Error('Proxy returned ' + response.status);
-          return response.text();
-        })
-        .then(function(html) {
-          if (!html || html.length < 500) throw new Error('Response too short');
-          var sections = parseReadings(html);
-          if (sections.length === 0) throw new Error('Could not parse readings');
-          renderReadings(sections);
-        })
-        .catch(function(err) {
-          // This proxy failed, try the next one
-          tryProxy(index + 1);
-        });
-    }
-
-    // Start trying proxies
-    tryProxy(0);
+    var searchQuery = encodeURIComponent('The Word Today TV catholic daily readings ' + monthName + ' ' + day + ' ' + year);
+    document.getElementById('readings-link').href = 'https://www.youtube.com/results?search_query=' + searchQuery;
+    document.getElementById('readings-date-label').textContent = dateStr;
   })();
 
   // Smooth scroll for nav links
@@ -769,12 +577,14 @@
     link.addEventListener('click', function(e) {
       e.preventDefault();
       const target = document.querySelector(this.getAttribute('href'));
-      const card = target;
-      if (!card.classList.contains('open')) {
-        card.classList.add('open');
-        updateToggleButton();
+      if (target) {
+        // If it's a prayer card, open it first
+        if (target.classList.contains('prayer-card') && !target.classList.contains('open')) {
+          target.classList.add('open');
+          updateToggleButton();
+        }
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 </script>

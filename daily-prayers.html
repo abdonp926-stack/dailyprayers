@@ -610,9 +610,8 @@
 
   })();
 
-  // Fetch daily Mass readings:
-  // 1) Catholic Readings API (GitHub Pages) → get scripture references
-  // 2) bible-api.com → get full passage text for each reference (World English Bible, public domain)
+  // Fetch daily Mass readings directly from USCCB (NAB translation with liturgical introductions)
+  // Uses corsproxy.io to bypass CORS, with fallback link if it fails
   (function() {
     const now = new Date();
     const yyyy = now.getFullYear();
@@ -625,121 +624,84 @@
     const dateStr = now.toLocaleDateString('en-US', dateOptions);
     document.getElementById('readings-date-subtitle').textContent = dateStr;
 
-    // Catholic Readings API gives us the scripture references for today
-    const apiUrl = 'https://cpbjr.github.io/catholic-readings-api/readings/' + yyyy + '/' + mm + '-' + dd + '.json';
+    // Fetch USCCB page via CORS proxy and parse the HTML
+    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(usccbUrl);
 
-    // Convert references like "Deuteronomy 4:1, 5-9" or "Psalm 147:12-13, 15-16, 19-20"
-    // into bible-api.com queries: ["Deuteronomy4:1", "Deuteronomy4:5-9"] etc.
-    function refToQueries(ref) {
-      var parts = ref.split(';');
-      var queries = [];
-      var currentBook = '';
-
-      parts.forEach(function(part) {
-        part = part.trim();
-        if (!part) return;
-
-        var chapterVerse;
-        var bookMatch = part.match(/^(\d?\s*[A-Za-z]+)\s+([\d].*)/);
-        if (bookMatch) {
-          currentBook = bookMatch[1].replace(/\s+/g, '');
-          chapterVerse = bookMatch[2].trim();
-        } else if (/^\d/.test(part)) {
-          chapterVerse = part.trim();
-        } else {
-          return;
-        }
-
-        if (!currentBook || !chapterVerse) return;
-
-        // Remove trailing letter suffixes like '15ab'
-        chapterVerse = chapterVerse.replace(/[a-z]+/g, '');
-
-        // Parse chapter:verses — verses can be "1, 5-9" or "12-13, 15-16, 19-20"
-        var cvMatch = chapterVerse.match(/^(\d+):(.+)/);
-        if (cvMatch) {
-          var chapter = cvMatch[1];
-          var segments = cvMatch[2].split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-          segments.forEach(function(seg) {
-            var rangeMatch = seg.match(/^(\d+)-(\d+)$/);
-            var singleMatch = seg.match(/^(\d+)$/);
-            if (rangeMatch) {
-              queries.push(currentBook + chapter + ':' + rangeMatch[1] + '-' + rangeMatch[2]);
-            } else if (singleMatch) {
-              queries.push(currentBook + chapter + ':' + singleMatch[1]);
-            }
-          });
-        } else {
-          queries.push(currentBook + chapterVerse);
-        }
-      });
-      return queries;
-    }
-
-    function fetchPassage(ref) {
-      var queries = refToQueries(ref);
-      if (queries.length === 0) return Promise.resolve('');
-
-      var fetches = queries.map(function(q) {
-        return fetch('https://bible-api.com/' + encodeURIComponent(q) + '?translation=web')
-          .then(function(r) { return r.ok ? r.json() : null; })
-          .then(function(d) { return d && d.text ? d.text.trim() : ''; })
-          .catch(function() { return ''; });
-      });
-
-      return Promise.all(fetches).then(function(texts) {
-        return texts.filter(Boolean).join('\n\n');
-      });
-    }
-
-    fetch(apiUrl)
+    fetch(proxyUrl)
       .then(function(response) {
-        if (!response.ok) throw new Error('API returned ' + response.status);
-        return response.json();
+        if (!response.ok) throw new Error('Proxy returned ' + response.status);
+        return response.text();
       })
-      .then(function(data) {
-        var readings = data.readings || {};
-        var readingOrder = [
-          { key: 'firstReading', label: 'First Reading' },
-          { key: 'psalm', label: 'Responsorial Psalm' },
-          { key: 'secondReading', label: 'Second Reading' },
-          { key: 'gospel', label: 'Gospel' }
-        ];
-
-        // Filter to only readings that exist
-        var available = readingOrder.filter(function(item) {
-          return readings[item.key];
-        });
-
-        if (available.length === 0) throw new Error('No readings found');
-
-        // Fetch all passage texts in parallel
-        var passageFetches = available.map(function(item) {
-          return fetchPassage(readings[item.key]);
-        });
-
-        return Promise.all(passageFetches).then(function(texts) {
-          return { data: data, available: available, texts: texts };
-        });
-      })
-      .then(function(result) {
-        var data = result.data;
-        var available = result.available;
-        var texts = result.texts;
-        var readings = data.readings;
-
+      .then(function(html) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
         var contentEl = document.getElementById('readings-content');
         contentEl.innerHTML = '';
 
-        // Show liturgical season
-        if (data.season) {
-          var info = document.createElement('p');
-          info.className = 'instruction';
-          info.textContent = data.season;
-          contentEl.appendChild(info);
-        }
+        // Find the main content area
+        var main = doc.querySelector('#block-usccb-readings-content') || doc.querySelector('main') || doc.body;
 
-        available.forEach(function(item, i) {
+        // Get all h3 headings — these mark each reading section
+        var headings = main.querySelectorAll('h3');
+        var sections = [];
+
+        headings.forEach(function(h3) {
+          var title = h3.textContent.trim();
+
+          // Only process actual reading headings
+          if (title === 'Reading 1' || title === 'Reading I' || title === 'First Reading') title = 'First Reading';
+          else if (title === 'Reading 2' || title === 'Reading II' || title === 'Second Reading') title = 'Second Reading';
+          else if (title.indexOf('Responsorial') !== -1) title = 'Responsorial Psalm';
+          else if (title.indexOf('Gospel') !== -1 && title.indexOf('Verse Before') === -1 && title.indexOf('Alleluia') === -1) title = 'Gospel';
+          else if (title.indexOf('Alleluia') !== -1 || title.indexOf('Verse Before') !== -1) return; // skip Alleluia/Verse Before Gospel
+          else return; // skip other headings
+
+          // Get the scripture reference and reading text from siblings after h3
+          var ref = '';
+          var textContent = '';
+          var el = h3.nextElementSibling;
+
+          while (el) {
+            if (el.tagName === 'H3' || el.tagName === 'H2') break; // next section
+
+            // Scripture reference is in the first link after the h3
+            if (el.tagName === 'A' && !ref) {
+              ref = el.textContent.trim();
+            }
+
+            // Reading text: grab any div or p with substantial text that isn't navigation
+            if ((el.tagName === 'DIV' || el.tagName === 'P' || el.tagName === 'SPAN') &&
+                el.textContent.trim().length > 20) {
+              var txt = el.textContent.trim();
+              // Skip navigation, form, and meta elements
+              if (txt.indexOf('LISTEN') === -1 && txt.indexOf('En Español') === -1 &&
+                  txt.indexOf('View Calendar') === -1 && txt.indexOf('Lectionary for Mass') === -1 &&
+                  txt.indexOf('Get Daily Readings') === -1 && txt.indexOf('SUBSCRIBE') === -1 &&
+                  txt !== ref) {
+                // Check it doesn't contain forms or other interactive elements
+                var hasForm = el.querySelector && (el.querySelector('form') || el.querySelector('input') || el.querySelector('button'));
+                if (!hasForm) {
+                  if (textContent) {
+                    textContent += '\n\n' + txt;
+                  } else {
+                    textContent = txt;
+                  }
+                }
+              }
+            }
+
+            el = el.nextElementSibling;
+          }
+
+          if (ref || textContent) {
+            sections.push({ title: title, ref: ref, text: textContent.trim() });
+          }
+        });
+
+        if (sections.length === 0) throw new Error('Could not parse readings');
+
+        // Render the readings
+        sections.forEach(function(reading) {
           var divider = document.createElement('div');
           divider.className = 'readings-divider';
           contentEl.appendChild(divider);
@@ -748,18 +710,20 @@
           section.className = 'reading-section';
 
           var h3 = document.createElement('h3');
-          h3.textContent = item.label;
+          h3.textContent = reading.title;
           section.appendChild(h3);
 
-          var refEl = document.createElement('p');
-          refEl.className = 'reading-ref';
-          refEl.textContent = readings[item.key];
-          section.appendChild(refEl);
+          if (reading.ref) {
+            var refEl = document.createElement('p');
+            refEl.className = 'reading-ref';
+            refEl.textContent = reading.ref;
+            section.appendChild(refEl);
+          }
 
-          if (texts[i]) {
+          if (reading.text) {
             var p = document.createElement('p');
             p.className = 'reading-text';
-            p.textContent = texts[i];
+            p.textContent = reading.text;
             section.appendChild(p);
           }
 

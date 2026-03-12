@@ -610,138 +610,158 @@
 
   })();
 
-  // Fetch daily Mass readings directly from USCCB (NAB translation with liturgical introductions)
-  // Uses corsproxy.io to bypass CORS, with fallback link if it fails
+  // Fetch daily Mass readings from USCCB (NAB translation with liturgical introductions)
+  // Uses multiple CORS proxies as fallbacks for reliability
   (function() {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const yy = String(yyyy).slice(-2);
-    const usccbUrl = 'https://bible.usccb.org/bible/readings/' + mm + dd + yy + '.cfm';
+    var now = new Date();
+    var yyyy = now.getFullYear();
+    var mm = String(now.getMonth() + 1).padStart(2, '0');
+    var dd = String(now.getDate()).padStart(2, '0');
+    var yy = String(yyyy).slice(-2);
+    var usccbUrl = 'https://bible.usccb.org/bible/readings/' + mm + dd + yy + '.cfm';
 
-    const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-US', dateOptions);
+    var dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+    var dateStr = now.toLocaleDateString('en-US', dateOptions);
     document.getElementById('readings-date-subtitle').textContent = dateStr;
 
-    // Fetch USCCB page via CORS proxy and parse the HTML
-    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(usccbUrl);
+    // Multiple CORS proxies for reliability — if one is down, try the next
+    var proxies = [
+      function(url) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url); },
+      function(url) { return 'https://corsproxy.io/?' + encodeURIComponent(url); },
+      function(url) { return 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url); }
+    ];
 
-    fetch(proxyUrl)
-      .then(function(response) {
-        if (!response.ok) throw new Error('Proxy returned ' + response.status);
-        return response.text();
-      })
-      .then(function(html) {
-        var parser = new DOMParser();
-        var doc = parser.parseFromString(html, 'text/html');
-        var contentEl = document.getElementById('readings-content');
-        contentEl.innerHTML = '';
+    // Parse USCCB HTML and extract reading sections
+    function parseReadings(html) {
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(html, 'text/html');
+      var main = doc.querySelector('#block-usccb-readings-content') || doc.querySelector('main') || doc.body;
+      var headings = main.querySelectorAll('h3');
+      var sections = [];
 
-        // Find the main content area
-        var main = doc.querySelector('#block-usccb-readings-content') || doc.querySelector('main') || doc.body;
+      headings.forEach(function(h3) {
+        var title = h3.textContent.trim();
 
-        // Get all h3 headings — these mark each reading section
-        var headings = main.querySelectorAll('h3');
-        var sections = [];
+        if (title === 'Reading 1' || title === 'Reading I' || title === 'First Reading') title = 'First Reading';
+        else if (title === 'Reading 2' || title === 'Reading II' || title === 'Second Reading') title = 'Second Reading';
+        else if (title.indexOf('Responsorial') !== -1) title = 'Responsorial Psalm';
+        else if (title.indexOf('Gospel') !== -1 && title.indexOf('Verse Before') === -1 && title.indexOf('Alleluia') === -1) title = 'Gospel';
+        else if (title.indexOf('Alleluia') !== -1 || title.indexOf('Verse Before') !== -1) return;
+        else return;
 
-        headings.forEach(function(h3) {
-          var title = h3.textContent.trim();
+        var ref = '';
+        var textContent = '';
+        var el = h3.nextElementSibling;
 
-          // Only process actual reading headings
-          if (title === 'Reading 1' || title === 'Reading I' || title === 'First Reading') title = 'First Reading';
-          else if (title === 'Reading 2' || title === 'Reading II' || title === 'Second Reading') title = 'Second Reading';
-          else if (title.indexOf('Responsorial') !== -1) title = 'Responsorial Psalm';
-          else if (title.indexOf('Gospel') !== -1 && title.indexOf('Verse Before') === -1 && title.indexOf('Alleluia') === -1) title = 'Gospel';
-          else if (title.indexOf('Alleluia') !== -1 || title.indexOf('Verse Before') !== -1) return; // skip Alleluia/Verse Before Gospel
-          else return; // skip other headings
+        while (el) {
+          if (el.tagName === 'H3' || el.tagName === 'H2') break;
 
-          // Get the scripture reference and reading text from siblings after h3
-          var ref = '';
-          var textContent = '';
-          var el = h3.nextElementSibling;
+          if (el.tagName === 'A' && !ref) {
+            ref = el.textContent.trim();
+          }
 
-          while (el) {
-            if (el.tagName === 'H3' || el.tagName === 'H2') break; // next section
-
-            // Scripture reference is in the first link after the h3
-            if (el.tagName === 'A' && !ref) {
-              ref = el.textContent.trim();
-            }
-
-            // Reading text: grab any div or p with substantial text that isn't navigation
-            if ((el.tagName === 'DIV' || el.tagName === 'P' || el.tagName === 'SPAN') &&
-                el.textContent.trim().length > 20) {
-              var txt = el.textContent.trim();
-              // Skip navigation, form, and meta elements
-              if (txt.indexOf('LISTEN') === -1 && txt.indexOf('En Español') === -1 &&
-                  txt.indexOf('View Calendar') === -1 && txt.indexOf('Lectionary for Mass') === -1 &&
-                  txt.indexOf('Get Daily Readings') === -1 && txt.indexOf('SUBSCRIBE') === -1 &&
-                  txt !== ref) {
-                // Check it doesn't contain forms or other interactive elements
-                var hasForm = el.querySelector && (el.querySelector('form') || el.querySelector('input') || el.querySelector('button'));
-                if (!hasForm) {
-                  if (textContent) {
-                    textContent += '\n\n' + txt;
-                  } else {
-                    textContent = txt;
-                  }
-                }
+          if ((el.tagName === 'DIV' || el.tagName === 'P' || el.tagName === 'SPAN') &&
+              el.textContent.trim().length > 20) {
+            var txt = el.textContent.trim();
+            if (txt.indexOf('LISTEN') === -1 && txt.indexOf('En Español') === -1 &&
+                txt.indexOf('View Calendar') === -1 && txt.indexOf('Lectionary for Mass') === -1 &&
+                txt.indexOf('Get Daily Readings') === -1 && txt.indexOf('SUBSCRIBE') === -1 &&
+                txt !== ref) {
+              var hasForm = el.querySelector && (el.querySelector('form') || el.querySelector('input') || el.querySelector('button'));
+              if (!hasForm) {
+                if (textContent) { textContent += '\n\n' + txt; }
+                else { textContent = txt; }
               }
             }
-
-            el = el.nextElementSibling;
           }
 
-          if (ref || textContent) {
-            sections.push({ title: title, ref: ref, text: textContent.trim() });
-          }
-        });
+          el = el.nextElementSibling;
+        }
 
-        if (sections.length === 0) throw new Error('Could not parse readings');
-
-        // Render the readings
-        sections.forEach(function(reading) {
-          var divider = document.createElement('div');
-          divider.className = 'readings-divider';
-          contentEl.appendChild(divider);
-
-          var section = document.createElement('div');
-          section.className = 'reading-section';
-
-          var h3 = document.createElement('h3');
-          h3.textContent = reading.title;
-          section.appendChild(h3);
-
-          if (reading.ref) {
-            var refEl = document.createElement('p');
-            refEl.className = 'reading-ref';
-            refEl.textContent = reading.ref;
-            section.appendChild(refEl);
-          }
-
-          if (reading.text) {
-            var p = document.createElement('p');
-            p.className = 'reading-text';
-            p.textContent = reading.text;
-            section.appendChild(p);
-          }
-
-          contentEl.appendChild(section);
-        });
-
-        // USCCB link at bottom
-        var fallbackDiv = document.createElement('div');
-        fallbackDiv.className = 'readings-fallback';
-        fallbackDiv.style.marginTop = '1.5rem';
-        fallbackDiv.innerHTML = '<a href="' + usccbUrl + '" target="_blank" rel="noopener">View full readings on USCCB &rarr;</a>';
-        contentEl.appendChild(fallbackDiv);
-      })
-      .catch(function(err) {
-        var contentEl = document.getElementById('readings-content');
-        contentEl.innerHTML = '<p class="instruction">Could not load today\'s readings automatically.</p>' +
-          '<div class="readings-fallback"><a href="' + usccbUrl + '" target="_blank" rel="noopener">Tap here to read today\'s readings on USCCB &rarr;</a></div>';
+        if (ref || textContent) {
+          sections.push({ title: title, ref: ref, text: textContent.trim() });
+        }
       });
+
+      return sections;
+    }
+
+    // Render parsed readings into the page
+    function renderReadings(sections) {
+      var contentEl = document.getElementById('readings-content');
+      contentEl.innerHTML = '';
+
+      sections.forEach(function(reading) {
+        var divider = document.createElement('div');
+        divider.className = 'readings-divider';
+        contentEl.appendChild(divider);
+
+        var section = document.createElement('div');
+        section.className = 'reading-section';
+
+        var h3 = document.createElement('h3');
+        h3.textContent = reading.title;
+        section.appendChild(h3);
+
+        if (reading.ref) {
+          var refEl = document.createElement('p');
+          refEl.className = 'reading-ref';
+          refEl.textContent = reading.ref;
+          section.appendChild(refEl);
+        }
+
+        if (reading.text) {
+          var p = document.createElement('p');
+          p.className = 'reading-text';
+          p.textContent = reading.text;
+          section.appendChild(p);
+        }
+
+        contentEl.appendChild(section);
+      });
+
+      var fallbackDiv = document.createElement('div');
+      fallbackDiv.className = 'readings-fallback';
+      fallbackDiv.style.marginTop = '1.5rem';
+      fallbackDiv.innerHTML = '<a href="' + usccbUrl + '" target="_blank" rel="noopener">View full readings on USCCB &rarr;</a>';
+      contentEl.appendChild(fallbackDiv);
+    }
+
+    // Show error fallback
+    function showFallback() {
+      var contentEl = document.getElementById('readings-content');
+      contentEl.innerHTML = '<p class="instruction">Could not load today\'s readings automatically.</p>' +
+        '<div class="readings-fallback"><a href="' + usccbUrl + '" target="_blank" rel="noopener">Tap here to read today\'s readings on USCCB &rarr;</a></div>';
+    }
+
+    // Try each proxy in sequence until one works
+    function tryProxy(index) {
+      if (index >= proxies.length) {
+        showFallback();
+        return;
+      }
+
+      var proxyUrl = proxies[index](usccbUrl);
+
+      fetch(proxyUrl, { signal: AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined })
+        .then(function(response) {
+          if (!response.ok) throw new Error('Proxy returned ' + response.status);
+          return response.text();
+        })
+        .then(function(html) {
+          if (!html || html.length < 500) throw new Error('Response too short');
+          var sections = parseReadings(html);
+          if (sections.length === 0) throw new Error('Could not parse readings');
+          renderReadings(sections);
+        })
+        .catch(function(err) {
+          // This proxy failed, try the next one
+          tryProxy(index + 1);
+        });
+    }
+
+    // Start trying proxies
+    tryProxy(0);
   })();
 
   // Smooth scroll for nav links

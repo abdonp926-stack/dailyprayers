@@ -385,6 +385,8 @@
   <a href="#thanksgiving">After Mass</a>
   <a href="#divine-mercy">Divine Mercy</a>
   <a href="#sacred-heart">Sacred Heart</a>
+  <a href="#eternal-rest">Eternal Rest</a>
+  <a href="#miraculous-medal">Miraculous Medal</a>
 </nav>
 
 <main>
@@ -529,6 +531,37 @@
       </div>
     </div>
   </div>
+
+  <!-- 5. Eternal Rest -->
+  <div class="prayer-card" id="eternal-rest">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Eternal Rest<span class="subtitle">Prayer for the Faithful Departed</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Eternal rest grant unto them, O Lord, and let perpetual light shine upon them. May the souls of all the faithful departed, through the mercy of God, rest in peace.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Prayer to Our Lady of the Miraculous Medal -->
+  <div class="prayer-card" id="miraculous-medal">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Prayer to Our Lady of the Miraculous Medal<span class="subtitle">The Immaculate Conception</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">O Virgin Mother of God, Mary Immaculate, we dedicate and consecrate ourselves to you under the title of Our Lady of the Miraculous Medal. May this Medal be for each one of us a sure sign of your affection for us and a constant reminder of our duties toward you.</p>
+        <p class="prayer-text">Ever while wearing it, may we be blessed by your loving protection and preserved in the grace of your Son. O most powerful Virgin, Mother of our Savior, keep us close to you every moment of our lives.</p>
+        <p class="prayer-text">Obtain for us, your children, the grace of a happy death; so that, in union with you, we may enjoy the bliss of heaven forever.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">O Mary, conceived without sin, pray for us who have recourse to thee.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
 </main>
 
 <footer>
@@ -591,6 +624,102 @@
     var searchQuery = encodeURIComponent('The Word Today TV catholic daily readings ' + monthName + ' ' + day + ' ' + year);
     document.getElementById('readings-link').href = 'https://www.youtube.com/results?search_query=' + searchQuery;
     document.getElementById('readings-date-label').textContent = dateStr;
+  })();
+
+  // Liturgical season accent color
+  (function() {
+    // Compute Easter Sunday using the Anonymous Gregorian algorithm
+    function easterDate(year) {
+      var a = year % 19;
+      var b = Math.floor(year / 100);
+      var c = year % 100;
+      var d = Math.floor(b / 4);
+      var e = b % 4;
+      var f = Math.floor((b + 8) / 25);
+      var g = Math.floor((b - f + 1) / 3);
+      var h = (19 * a + b - d - g + 15) % 30;
+      var i = Math.floor(c / 4);
+      var k = c % 4;
+      var l = (32 + 2 * e + 2 * i - h - k) % 7;
+      var m = Math.floor((a + 11 * h + 22 * l) / 451);
+      var month = Math.floor((h + l - 7 * m + 114) / 31) - 1;
+      var day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, month, day);
+    }
+
+    function toLiturgicalSeason(date) {
+      var year = date.getFullYear();
+      var easter = easterDate(year);
+
+      // Key dates derived from Easter
+      var ashWednesday = new Date(easter); ashWednesday.setDate(easter.getDate() - 46);
+      var holyThursday = new Date(easter); holyThursday.setDate(easter.getDate() - 3);
+      var goodFriday = new Date(easter); goodFriday.setDate(easter.getDate() - 2);
+      var palmSunday = new Date(easter); palmSunday.setDate(easter.getDate() - 7);
+      var pentecost = new Date(easter); pentecost.setDate(easter.getDate() + 49);
+
+      // Christmas season: Dec 25 through Baptism of the Lord (Sunday after Jan 6)
+      var christmas = new Date(year, 11, 25);
+      var jan6 = new Date(year, 0, 6);
+      // Baptism of the Lord: Sunday after Jan 6 (or Jan 7 if Jan 6 is Sunday)
+      var baptism = new Date(jan6);
+      if (jan6.getDay() === 0) {
+        baptism.setDate(7);
+      } else {
+        baptism.setDate(6 + (7 - jan6.getDay()));
+      }
+
+      // Advent: 4 Sundays before Christmas
+      var advent = new Date(year, 11, 25);
+      var christmasDay = advent.getDay();
+      advent.setDate(25 - christmasDay - 21); // Go back to 4th Sunday before Christmas
+
+      // Normalize date for comparison (strip time)
+      var d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+      // Check seasons in order
+      if (d >= christmas) return 'christmas';
+      if (d >= advent) return 'advent';
+      if (d >= pentecost) return 'ordinary';
+      if (d >= easter) return 'easter';
+      if (d.getTime() === goodFriday.getTime() || d.getTime() === palmSunday.getTime()) return 'passion';
+      if (d >= ashWednesday) return 'lent';
+      if (d <= baptism) return 'christmas';
+      return 'ordinary';
+    }
+
+    var season = toLiturgicalSeason(new Date());
+    var root = document.documentElement;
+
+    // Set accent colors based on liturgical season
+    var colors = {
+      advent:    { accent: '#9b72b0', dim: '#7d5a91', glow: 'rgba(155, 114, 176, 0.12)' },
+      christmas: { accent: '#d4af37', dim: '#b8962e', glow: 'rgba(212, 175, 55, 0.12)' },
+      lent:      { accent: '#9b72b0', dim: '#7d5a91', glow: 'rgba(155, 114, 176, 0.12)' },
+      passion:   { accent: '#c0392b', dim: '#a33225', glow: 'rgba(192, 57, 43, 0.12)' },
+      easter:    { accent: '#d4af37', dim: '#b8962e', glow: 'rgba(212, 175, 55, 0.12)' },
+      ordinary:  { accent: '#5a9e6f', dim: '#4a8a5e', glow: 'rgba(90, 158, 111, 0.12)' }
+    };
+
+    var c = colors[season] || colors.ordinary;
+    root.style.setProperty('--accent', c.accent);
+    root.style.setProperty('--accent-dim', c.dim);
+    root.style.setProperty('--accent-glow', c.glow);
+
+    // Update selection color to match
+    var style = document.createElement('style');
+    style.textContent = '::selection { background: ' + c.accent + '59; }';
+    document.head.appendChild(style);
+
+    // Show current season in footer
+    var seasonNames = {
+      advent: 'Advent', christmas: 'Christmas', lent: 'Lent',
+      passion: 'Holy Week', easter: 'Easter', ordinary: 'Ordinary Time'
+    };
+    var footer = document.querySelector('footer p');
+    if (footer) {
+      footer.textContent = '✝ ' + seasonNames[season] + ' · Ad Maiorem Dei Gloriam ✝';
+    }
   })();
 
   // Smooth scroll for nav links

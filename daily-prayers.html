@@ -377,6 +377,68 @@
       .resource-card h3 { font-size: 0.74rem; }
     }
 
+    /* Saint of the Day */
+    .saint-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .saint-header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .saint-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .saint-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.15rem;
+    }
+
+    .saint-name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .saint-details {
+      margin-top: 0.85rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .saint-patron {
+      font-size: 0.78rem;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .saint-fact {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      line-height: 1.65;
+    }
+
+    @media (max-width: 480px) {
+      .saint-card { padding: 1rem 1.15rem; }
+      .saint-name { font-size: 0.92rem; }
+    }
+
   </style>
 </head>
 <body>
@@ -421,6 +483,20 @@
     </a>
   </div>
 
+  <!-- Saint of the Day -->
+  <div class="saint-card" id="saint-card" style="display:none;">
+    <div class="saint-header">
+      <span class="saint-icon">🕊</span>
+      <div>
+        <h3 class="saint-label">Saint of the Day</h3>
+        <p class="saint-name" id="saint-name"></p>
+      </div>
+    </div>
+    <div class="saint-details">
+      <p class="saint-patron" id="saint-patron"></p>
+      <p class="saint-fact" id="saint-fact"></p>
+    </div>
+  </div>
 
   <button class="toggle-all" onclick="toggleAll()">Expand All</button>
 
@@ -861,6 +937,166 @@
     var liturgicalDayLabel = document.getElementById('liturgical-day-label');
     if (liturgicalDayLabel) {
       liturgicalDayLabel.textContent = getLiturgicalDay(new Date());
+    }
+  })();
+
+  // Saint of the Day
+  (function() {
+    var saints = {
+      // January
+      '1-2': {n:'St. Basil the Great & St. Gregory Nazianzen',p:'Patron saints of hospitals (Basil) and poets (Gregory)',f:'These two close friends from Cappadocia revolutionized Christian theology. They once compiled a collection of Origen\'s writings together while living as monks in the wilderness.'},
+      '1-4': {n:'St. Elizabeth Ann Seton',p:'Patron saint of Catholic schools',f:'She was the first native-born American to be canonized. A widowed mother of five, she founded the first Catholic girls\' school in the nation.'},
+      '1-5': {n:'St. John Neumann',p:'Patron saint of Catholic education',f:'This Czech-born bishop of Philadelphia established the first diocesan Catholic school system in the U.S. and spoke twelve languages.'},
+      '1-7': {n:'St. Raymond of Penyafort',p:'Patron saint of canon lawyers',f:'He compiled the official collection of Church law used for centuries. Legend says he sailed 160 miles from Majorca to Barcelona on his cloak after the king refused him a ship.'},
+      '1-13': {n:'St. Hilary of Poitiers',p:'Patron saint of backward children and those with snake bites',f:'Known as the "Hammer of the Arians," he was exiled to Phrygia for four years for defending the divinity of Christ but continued writing influential theological works.'},
+      '1-17': {n:'St. Anthony of Egypt',p:'Patron saint of basket makers and gravediggers',f:'Considered the father of monasticism, he lived as a hermit in the desert for over 80 years and reportedly lived to be 105 years old.'},
+      '1-20': {n:'St. Sebastian',p:'Patron saint of athletes and soldiers',f:'He survived being shot full of arrows by Roman archers. Nursed back to health, he confronted the emperor again and was beaten to death with clubs.'},
+      '1-21': {n:'St. Agnes',p:'Patron saint of young girls and engaged couples',f:'Martyred at just 12 or 13 years old, she is one of the youngest saints. Each year on her feast day, two lambs are blessed at her church in Rome and their wool is used to make pallia for new archbishops.'},
+      '1-24': {n:'St. Francis de Sales',p:'Patron saint of writers and journalists',f:'He slipped pamphlets under doors in Calvinist Geneva to evangelize when no one would listen to him preach. He eventually converted thousands.'},
+      '1-25': {n:'The Conversion of St. Paul',p:'Patron saint of missionaries and theologians',f:'Paul went from actively persecuting Christians to becoming the most prolific author of the New Testament. He wrote 13 of the 27 books.'},
+      '1-28': {n:'St. Thomas Aquinas',p:'Patron saint of students and universities',f:'His fellow students called him "the Dumb Ox" because of his quiet manner and large build. His teacher, St. Albert the Great, predicted his writings would one day "bellow" across the world.'},
+      '1-31': {n:'St. John Bosco',p:'Patron saint of young people and magicians',f:'He used magic tricks, juggling, and acrobatics to draw street children to his youth centers. He once walked through a dangerous neighborhood protected by a mysterious gray dog that appeared and vanished for years.'},
+      // February
+      '2-3': {n:'St. Blaise',p:'Patron saint of throat ailments',f:'Before his martyrdom, he miraculously saved a boy who was choking on a fish bone. To this day, throats are blessed with crossed candles on his feast.'},
+      '2-5': {n:'St. Agatha',p:'Patron saint of nurses and breast cancer patients',f:'She endured terrible tortures in Sicily for refusing to renounce her faith. Mt. Etna\'s eruptions were said to have been stopped by her intercession.'},
+      '2-6': {n:'St. Paul Miki & Companions',p:'Patron saint of Japan',f:'He and 25 other Catholics were crucified on a hill in Nagasaki in 1597. From the cross, Paul Miki preached his final sermon to the crowd below.'},
+      '2-8': {n:'St. Josephine Bakhita',p:'Patron saint of human trafficking victims',f:'Born in Sudan, she was kidnapped and sold into slavery as a child. After gaining her freedom in Italy, she became a Canossian Sister and was known for her gentle smile.'},
+      '2-10': {n:'St. Scholastica',p:'Patron saint of convulsive children and storms',f:'Twin sister of St. Benedict, she once prayed for a storm to prevent her brother from leaving after dinner. A violent thunderstorm immediately erupted, and Benedict had to stay.'},
+      '2-14': {n:'Sts. Cyril and Methodius',p:'Patron saints of Europe',f:'These brothers invented the Glagolitic alphabet to translate Scripture into Slavonic, laying the foundation for the Cyrillic script used by hundreds of millions today.'},
+      '2-22': {n:'Chair of St. Peter',p:'',f:'This feast celebrates Peter\'s authority as the first pope. An ancient wooden chair, believed to have been used by Peter himself, is encased in the famous bronze throne in St. Peter\'s Basilica.'},
+      // March
+      '3-3': {n:'St. Katharine Drexel',p:'Patron saint of racial justice and philanthropists',f:'Born into one of the wealthiest families in America, she gave away her entire $20 million fortune to fund schools for Native Americans and African Americans.'},
+      '3-4': {n:'St. Casimir',p:'Patron saint of Poland and Lithuania',f:'This prince refused the crown of Hungary and chose a life of prayer instead. He reportedly died at age 25 with his favorite hymn to Mary on his lips.'},
+      '3-7': {n:'Sts. Perpetua and Felicity',p:'Patron saints of mothers and expectant mothers',f:'Perpetua was a noblewoman and Felicity her servant, both martyred together in Carthage in 203 AD. Perpetua\'s prison diary is one of the oldest surviving texts written by a Christian woman.'},
+      '3-8': {n:'St. John of God',p:'Patron saint of hospitals, nurses, and the sick',f:'After a religious conversion so intense that people thought he was insane, he was briefly committed to an asylum. The experience inspired him to devote his life to caring for the sick and poor.'},
+      '3-9': {n:'St. Frances of Rome',p:'Patron saint of automobile drivers',f:'She experienced visions of her guardian angel, who lit her path with a golden light visible only to her, making her the patron of drivers. She balanced a mystical prayer life with being a devoted wife and mother.'},
+      '3-17': {n:'St. Patrick',p:'Patron saint of Ireland and engineers',f:'He was kidnapped from Britain by Irish pirates at age 16 and enslaved for six years as a shepherd. After escaping, he returned to convert the very people who had enslaved him.'},
+      '3-19': {n:'St. Joseph',p:'Patron saint of the Universal Church, workers, and fathers',f:'Despite being one of the most important saints, not a single word spoken by Joseph is recorded in Scripture. He is honored with two feast days: March 19 and May 1.'},
+      '3-23': {n:'St. Turibius of Mogrovejo',p:'Patron saint of Latin American bishops',f:'Though a layman and law professor, he was appointed Archbishop of Lima. He learned local indigenous languages and traveled 18,000 miles on foot through the Andes to visit his diocese.'},
+      '3-25': {n:'The Annunciation',p:'',f:'This solemnity celebrates the Angel Gabriel\'s announcement to Mary and the moment of the Incarnation. It falls exactly nine months before Christmas Day.'},
+      // April
+      '4-2': {n:'St. Francis of Paola',p:'Patron saint of seafarers',f:'When a boatman refused to ferry him across the Strait of Messina, he laid his cloak on the water and sailed across on it with two companions.'},
+      '4-4': {n:'St. Isidore of Seville',p:'Patron saint of the internet and computer technicians',f:'He compiled the Etymologies, a 20-volume encyclopedia that attempted to catalog all human knowledge — essentially the medieval internet. Pope John Paul II named him patron of the internet in 1997.'},
+      '4-5': {n:'St. Vincent Ferrer',p:'Patron saint of builders and plumbers',f:'This Dominican friar was said to have performed over 800 miracles. He preached throughout Europe for 20 years and converted thousands, despite only speaking his native Valencian.'},
+      '4-7': {n:'St. John Baptist de la Salle',p:'Patron saint of teachers',f:'He gave up his wealth and canonry to live with the schoolteachers he trained. He founded the Brothers of the Christian Schools and pioneered teaching in the vernacular instead of Latin.'},
+      '4-11': {n:'St. Stanislaus',p:'Patron saint of Poland',f:'As Bishop of Kraków, he excommunicated King Bolesław II for his cruelties. The king murdered him at the altar during Mass. He is one of Poland\'s most beloved saints.'},
+      '4-21': {n:'St. Anselm',p:'Patron saint of philosophers',f:'His ontological argument for God\'s existence — that God is "that than which nothing greater can be thought" — is still debated in philosophy classrooms a thousand years later.'},
+      '4-23': {n:'St. George',p:'Patron saint of England, soldiers, and scouts',f:'Though famous for the legend of slaying a dragon, the real George was a Roman soldier martyred for his faith around 303 AD. His veneration spread across the entire Christian world.'},
+      '4-25': {n:'St. Mark the Evangelist',p:'Patron saint of Venice and notaries',f:'He wrote the shortest and likely earliest Gospel. Tradition says he was dragged through the streets of Alexandria by a rope around his neck. His relics were famously smuggled to Venice hidden under pork.'},
+      '4-28': {n:'St. Louis de Montfort',p:'Patron saint of preachers',f:'His book "True Devotion to Mary" was lost for 130 years before being discovered in a chest in 1842. Pope John Paul II took his papal motto "Totus Tuus" from Montfort\'s writings.'},
+      '4-29': {n:'St. Catherine of Siena',p:'Patron saint of Europe, nurses, and fire prevention',f:'She could not read or write but dictated hundreds of letters to popes and rulers. She convinced Pope Gregory XI to return to Rome from Avignon, ending the 68-year papal exile.'},
+      // May
+      '5-1': {n:'St. Joseph the Worker',p:'Patron saint of workers and craftsmen',f:'Pope Pius XII established this feast in 1955 as a Catholic counterpoint to the Communist May Day celebrations, honoring the dignity of human labor.'},
+      '5-2': {n:'St. Athanasius',p:'Patron saint of theologians',f:'He was exiled five times for defending the divinity of Christ against Arianism. The phrase "Athanasius contra mundum" (Athanasius against the world) describes his relentless stand.'},
+      '5-3': {n:'Sts. Philip and James',p:'',f:'Philip asked Jesus to "show us the Father," prompting one of the most profound teachings in John\'s Gospel. James, called "the Less" to distinguish him from the other James, led the Church in Jerusalem.'},
+      '5-10': {n:'St. Damien of Molokai',p:'Patron saint of people with leprosy and outcasts',f:'He voluntarily lived among lepers on the Hawaiian island of Molokai for 16 years, eventually contracting the disease himself. He built houses, schools, and coffins with his own hands.'},
+      '5-13': {n:'Our Lady of Fatima',p:'',f:'In 1917, three shepherd children in Portugal reported six apparitions of the Blessed Virgin Mary. The final apparition included the "Miracle of the Sun," witnessed by an estimated 70,000 people.'},
+      '5-14': {n:'St. Matthias',p:'Patron saint of alcoholics and tailors',f:'He was chosen by lot to replace Judas as the twelfth apostle. He is one of the most obscure apostles — almost nothing is known about his later life.'},
+      '5-15': {n:'St. Isidore the Farmer',p:'Patron saint of farmers and rural communities',f:'This humble farm laborer from Madrid was said to have had angels plow his fields while he prayed. His body was found incorrupt 40 years after his death.'},
+      '5-22': {n:'St. Rita of Cascia',p:'Patron saint of impossible causes and abused wives',f:'After her husband\'s murder and her sons\' deaths, she tried three times to enter a convent before being miraculously admitted. She bore a wound on her forehead from meditating on the crown of thorns.'},
+      '5-26': {n:'St. Philip Neri',p:'Patron saint of joy and humor',f:'Known as the "Apostle of Rome" and the humorous saint, he once shaved off half his beard and walked through Rome to cure himself of vanity. He founded the Oratory with an emphasis on music and joy.'},
+      '5-27': {n:'St. Augustine of Canterbury',p:'Patron saint of England',f:'Sent by Pope Gregory the Great to evangelize England, he was so terrified of the mission he turned back once before completing the journey. He eventually converted King Ethelbert of Kent.'},
+      // June
+      '6-1': {n:'St. Justin Martyr',p:'Patron saint of philosophers',f:'He was a pagan philosopher who converted after meeting an old man by the sea who introduced him to the Hebrew prophets. He wrote some of the earliest descriptions of how Christians celebrated the Eucharist.'},
+      '6-3': {n:'St. Charles Lwanga & Companions',p:'Patron saints of African youth and converts',f:'These 22 young Ugandan men and boys were burned alive or beheaded in 1886 for refusing the sexual advances of King Mwanga II and for teaching the faith.'},
+      '6-5': {n:'St. Boniface',p:'Patron saint of Germany and brewers',f:'To prove the powerlessness of pagan gods, he chopped down Thor\'s sacred oak tree at Geismar. When no divine punishment followed, the awestruck crowd converted. He used the wood to build a chapel.'},
+      '6-9': {n:'St. Ephrem',p:'Patron saint of spiritual directors',f:'He wrote the earliest known Marian hymns and composed so many hymns that he earned the title "Harp of the Holy Spirit." He used poetry and music as tools against heresy.'},
+      '6-11': {n:'St. Barnabas',p:'Patron saint of Cyprus and against hailstorms',f:'His real name was Joseph, but the apostles nicknamed him Barnabas meaning "son of encouragement." He sold his property and gave all the money to the apostles.'},
+      '6-13': {n:'St. Anthony of Padua',p:'Patron saint of lost things and the poor',f:'He was such a powerful preacher that even fish supposedly rose from the water to listen. His tongue was found incorrupt when his tomb was opened 30 years after his death.'},
+      '6-21': {n:'St. Aloysius Gonzaga',p:'Patron saint of young students and plague victims',f:'He renounced his inheritance as a marquis to become a Jesuit. He died at 23 from plague contracted while caring for the sick in Rome.'},
+      '6-22': {n:'Sts. John Fisher & Thomas More',p:'Patron saints of politicians and lawyers (More)',f:'Both were executed by Henry VIII for refusing to acknowledge him as head of the Church of England. More famously said at the scaffold: "I die the king\'s good servant, but God\'s first."'},
+      '6-24': {n:'Nativity of St. John the Baptist',p:'Patron saint of baptism and converts',f:'Only three birthdays are celebrated in the liturgical calendar: Jesus, Mary, and John the Baptist. His feast falls exactly six months before Christmas, reflecting the Gospel account.'},
+      '6-28': {n:'St. Irenaeus',p:'Patron saint of apologists',f:'A student of St. Polycarp, who was a student of the Apostle John, he provides a direct link to the apostolic era. His work "Against Heresies" is one of the most important early Christian texts.'},
+      '6-29': {n:'Sts. Peter and Paul',p:'Patron saints of Rome',f:'Tradition holds both were martyred in Rome on the same day: Peter was crucified upside down, and Paul was beheaded. Their shared feast has been celebrated since at least the year 258.'},
+      // July
+      '7-1': {n:'St. Junípero Serra',p:'Patron saint of vocations and Hispanic Americans',f:'He founded nine of the 21 California missions, walking thousands of miles despite a chronically infected leg. Many California cities (San Francisco, San Diego, Santa Clara) trace their origins to his missions.'},
+      '7-3': {n:'St. Thomas the Apostle',p:'Patron saint of architects and India',f:'Known as "Doubting Thomas," he later traveled further than any other apostle, reaching India where he established Christian communities that still exist today, 2000 years later.'},
+      '7-6': {n:'St. Maria Goretti',p:'Patron saint of youth, purity, and crime victims',f:'She was murdered at age 11 for resisting an assault. On her deathbed she forgave her attacker, who later converted in prison after she appeared to him in a dream. He attended her canonization.'},
+      '7-11': {n:'St. Benedict',p:'Patron saint of Europe and students',f:'His Rule of St. Benedict, written around 530, is still followed by thousands of monasteries worldwide. His famous motto "Ora et Labora" (pray and work) shaped Western civilization.'},
+      '7-14': {n:'St. Kateri Tekakwitha',p:'Patron saint of ecology and Native Americans',f:'She was the first Native American to be canonized. Smallpox left her partially blind and scarred, but after her death, witnesses reported her scars vanished and her face became radiantly beautiful.'},
+      '7-15': {n:'St. Bonaventure',p:'Patron saint of bowel disorders',f:'Called the "Seraphic Doctor," he was a Franciscan theologian so brilliant that St. Thomas Aquinas, upon seeing him writing, said: "Let us leave one saint to work for another."'},
+      '7-16': {n:'Our Lady of Mount Carmel',p:'',f:'This feast honors the Carmelite tradition and the Brown Scapular. The Blessed Mother reportedly appeared to St. Simon Stock in 1251 and promised that whoever dies wearing the scapular would be saved.'},
+      '7-22': {n:'St. Mary Magdalene',p:'Patron saint of penitents and contemplatives',f:'She was the first person to see the risen Christ, earning her the title "Apostle to the Apostles." Pope Francis elevated her memorial to a feast day in 2016 to emphasize her importance.'},
+      '7-23': {n:'St. Bridget of Sweden',p:'Patron saint of Europe and widows',f:'After her husband\'s death, she founded the Brigittine order and experienced vivid revelations about Christ\'s Passion that influenced Christian art for centuries.'},
+      '7-25': {n:'St. James the Apostle',p:'Patron saint of Spain and pilgrims',f:'His shrine at Santiago de Compostela in Spain has been one of the most popular pilgrimage destinations for over a thousand years. The Camino de Santiago attracts hundreds of thousands of pilgrims annually.'},
+      '7-26': {n:'Sts. Joachim and Anne',p:'Patron saints of grandparents',f:'Though not mentioned in Scripture, tradition holds them as the parents of the Blessed Virgin Mary. St. Anne is one of the most widely venerated saints in the world.'},
+      '7-29': {n:'St. Martha',p:'Patron saint of cooks and homemakers',f:'She famously complained to Jesus that her sister Mary wasn\'t helping with the housework. Jesus gently told her that Mary had "chosen the better part," a teaching on contemplation and action.'},
+      '7-31': {n:'St. Ignatius of Loyola',p:'Patron saint of soldiers and retreats',f:'A cannonball that shattered his leg ended his military career and began his spiritual one. While recovering, he read about saints and was so inspired he founded the Jesuits, now the largest religious order.'},
+      // August
+      '8-1': {n:'St. Alphonsus Liguori',p:'Patron saint of moral theologians and arthritis sufferers',f:'He founded the Redemptorists at age 36 and wrote over 100 books. Severe arthritis bent his head so far forward that it pressed against his chest in his later years.'},
+      '8-4': {n:'St. John Vianney',p:'Patron saint of parish priests',f:'He spent 16 to 18 hours a day hearing confessions, with people traveling from across France to see him. He survived multiple attempts by the devil to disturb his sleep with loud noises.'},
+      '8-8': {n:'St. Dominic',p:'Patron saint of astronomers and the Dominican Republic',f:'He founded the Order of Preachers (Dominicans) to combat heresy through education. Tradition credits him with promoting the Rosary after the Blessed Mother appeared to him.'},
+      '8-10': {n:'St. Lawrence',p:'Patron saint of cooks and comedians',f:'When ordered to hand over the Church\'s treasures, he presented the poor and sick saying "These are the treasures of the Church." While being roasted alive on a gridiron, he reportedly said: "Turn me over, I\'m done on this side."'},
+      '8-11': {n:'St. Clare of Assisi',p:'Patron saint of television and eye disease',f:'She became patron of television because when she was too ill to attend Mass, an image of the service appeared on her cell wall. She founded the Poor Clares and convinced a Saracen army to retreat by holding up the Eucharist.'},
+      '8-14': {n:'St. Maximilian Kolbe',p:'Patron saint of drug addicts and political prisoners',f:'In Auschwitz, he volunteered to die in place of a stranger who cried out for his wife and children. He was the last of ten men to die in the starvation bunker, killed by lethal injection.'},
+      '8-15': {n:'The Assumption of the Blessed Virgin Mary',p:'',f:'This solemnity celebrates Mary being taken body and soul into heaven. It is one of the oldest Marian feast days, celebrated since at least the 5th century, and was dogmatically defined in 1950.'},
+      '8-20': {n:'St. Bernard of Clairvaux',p:'Patron saint of beekeepers and candlemakers',f:'Called the "Honey-Tongued Doctor" for his eloquent preaching, he entered the monastery with 30 of his relatives and friends. He founded 163 monasteries across Europe.'},
+      '8-21': {n:'St. Pius X',p:'Patron saint of first communicants and pilgrims',f:'He lowered the age for First Communion from 12 to about 7, saying children should receive Jesus as soon as they could distinguish the Eucharist from ordinary bread.'},
+      '8-23': {n:'St. Rose of Lima',p:'Patron saint of Latin America and the Philippines',f:'The first saint of the Americas, she was so beautiful her parents wanted her to marry, but she rubbed pepper on her face to disfigure herself. She lived as a hermit in a shed in her family\'s garden.'},
+      '8-27': {n:'St. Monica',p:'Patron saint of mothers and married women',f:'She prayed for her son Augustine\'s conversion for 17 years. A bishop reassured her: "It is impossible that the son of so many tears should perish." Augustine became one of the greatest saints.'},
+      '8-28': {n:'St. Augustine of Hippo',p:'Patron saint of brewers and theologians',f:'Before his conversion he famously prayed: "Lord, make me chaste — but not yet." His Confessions is considered the first Western autobiography and is still widely read after 1,600 years.'},
+      '8-29': {n:'The Passion of St. John the Baptist',p:'',f:'This feast commemorates John\'s beheading at the order of Herod, who was manipulated by Salome\'s dance. John had fearlessly denounced Herod\'s unlawful marriage.'},
+      // September
+      '9-3': {n:'St. Gregory the Great',p:'Patron saint of musicians, singers, and teachers',f:'He reformed the liturgy and promoted what became known as Gregorian chant. Before becoming pope, he sold all his possessions and turned his family estate into a monastery.'},
+      '9-5': {n:'St. Teresa of Calcutta',p:'Patron saint of World Youth Day',f:'She won the Nobel Peace Prize in 1979. Her private letters, published after her death, revealed she experienced decades of spiritual darkness — yet continued her work with unwavering dedication.'},
+      '9-9': {n:'St. Peter Claver',p:'Patron saint of slaves, race relations, and Colombia',f:'He met every slave ship that arrived in Cartagena, Colombia, climbing into the dark holds with food and medicine. He personally ministered to over 300,000 enslaved people.'},
+      '9-13': {n:'St. John Chrysostom',p:'Patron saint of orators and preachers',f:'His name means "Golden Mouth" for his extraordinary preaching. He was so popular in Constantinople that he was exiled twice for criticizing the empress\'s vanity and the clergy\'s wealth.'},
+      '9-16': {n:'Sts. Cornelius and Cyprian',p:'',f:'Pope Cornelius and Bishop Cyprian, though they disagreed about how to treat Christians who lapsed under persecution, were both martyred and are celebrated together as witnesses to unity.'},
+      '9-17': {n:'St. Robert Bellarmine',p:'Patron saint of catechists',f:'This Jesuit cardinal was one of the most important figures of the Counter-Reformation. He was so short that he needed a special platform to be seen at the pulpit.'},
+      '9-20': {n:'Sts. Andrew Kim Tae-gŏn & Paul Chŏng Ha-sang',p:'Patron saints of Korea',f:'Andrew Kim was the first Korean-born Catholic priest. He was beheaded at age 25. Over 10,000 Korean Catholics were martyred between 1839 and 1867.'},
+      '9-21': {n:'St. Matthew',p:'Patron saint of accountants and tax collectors',f:'He went from being a despised tax collector to writing the first Gospel. When Jesus called him, Matthew left his tax booth immediately — abandoning what was likely a lucrative career.'},
+      '9-23': {n:'St. Padre Pio',p:'Patron saint of stress relief and civil defense volunteers',f:'He bore the stigmata for 50 years and reportedly could bilocate, read souls in confession, and emit the fragrance of flowers. Over 5,000 prayer groups worldwide bear his name.'},
+      '9-27': {n:'St. Vincent de Paul',p:'Patron saint of charitable organizations',f:'Once captured by pirates and sold into slavery in Tunisia, he eventually escaped and devoted his life to serving the poor. He founded both the Vincentians and, with St. Louise de Marillac, the Daughters of Charity.'},
+      '9-29': {n:'Sts. Michael, Gabriel, and Raphael',p:'Patron saints (Michael: soldiers and police; Gabriel: communications; Raphael: travelers and the blind)',f:'These are the only three angels named in Scripture. Michael defeated Satan, Gabriel announced the Incarnation, and Raphael healed Tobit\'s blindness and guided his son Tobias.'},
+      '9-30': {n:'St. Jerome',p:'Patron saint of librarians and translators',f:'He translated the entire Bible into Latin (the Vulgate), which remained the standard text for over a thousand years. He was famously bad-tempered and once wrote: "I am not a saint."'},
+      // October
+      '10-1': {n:'St. Thérèse of Lisieux',p:'Patron saint of missionaries, florists, and pilots',f:'She entered the Carmelite convent at just 15, needing special permission from the pope. Her autobiography, written under obedience, became one of the most popular spiritual books ever. She called her spirituality the "Little Way."'},
+      '10-2': {n:'The Holy Guardian Angels',p:'',f:'This feast honors the angels God assigns to protect each person. Jesus referenced guardian angels when He said of children: "Their angels in heaven always see the face of my Father" (Mt 18:10).'},
+      '10-4': {n:'St. Francis of Assisi',p:'Patron saint of animals, ecology, and Italy',f:'The son of a wealthy cloth merchant, he stripped off his fine clothes in the public square and renounced his inheritance. He received the stigmata two years before his death and composed the "Canticle of the Sun."'},
+      '10-5': {n:'St. Faustina Kowalska',p:'Patron saint of mercy',f:'A young Polish nun with only three years of education, she recorded Jesus\'s messages about Divine Mercy in her diary. The Divine Mercy devotion she promoted is now practiced worldwide.'},
+      '10-7': {n:'Our Lady of the Rosary',p:'',f:'This feast was established by Pope Pius V to commemorate the Christian victory at the Battle of Lepanto in 1571, which he attributed to the power of the Rosary prayed across Europe.'},
+      '10-15': {n:'St. Teresa of Ávila',p:'Patron saint of headache sufferers and chess players',f:'She reformed the Carmelite order despite fierce opposition and was the first woman named a Doctor of the Church. She was known for her wit; she once told God: "If this is how You treat Your friends, no wonder You have so few."'},
+      '10-16': {n:'St. Margaret Mary Alacoque',p:'Patron saint of devotees of the Sacred Heart',f:'Jesus appeared to her and revealed His Sacred Heart, asking for a feast day of reparation. The devotion she promoted — including First Friday Communion and the Holy Hour — spread throughout the entire Church.'},
+      '10-17': {n:'St. Ignatius of Antioch',p:'Patron saint of the Church in the Eastern Mediterranean',f:'On his way to martyrdom in Rome, he wrote seven letters that are among the earliest Christian documents outside the New Testament. He coined the term "Catholic Church" in writing.'},
+      '10-18': {n:'St. Luke the Evangelist',p:'Patron saint of artists, physicians, and surgeons',f:'He was a physician and the only Gentile author of the New Testament. He wrote both the Gospel of Luke and the Acts of the Apostles — together comprising over a quarter of the New Testament.'},
+      '10-22': {n:'St. John Paul II',p:'Patron saint of families and World Youth Day',f:'He survived an assassination attempt in 1981 and later visited his would-be assassin in prison to forgive him. He traveled more than any other pope in history, visiting 129 countries.'},
+      // November
+      '11-1': {n:'All Saints',p:'',f:'This solemnity honors all saints, known and unknown. It originated in the 4th century when churches began dedicating days to martyrs. Pope Gregory III fixed it on November 1 in the 8th century.'},
+      '11-2': {n:'All Souls\' Day',p:'',f:'The Church prays for all the faithful departed, especially those in purgatory. The tradition of visiting cemeteries and offering Masses for the dead on this day goes back centuries.'},
+      '11-3': {n:'St. Martin de Porres',p:'Patron saint of mixed-race people, barbers, and public health workers',f:'Born in Lima to a Spanish nobleman and a freed slave, he was known for miraculous healings and for caring for animals. He reportedly could bilocate and was seen in distant countries while never leaving his monastery.'},
+      '11-4': {n:'St. Charles Borromeo',p:'Patron saint of catechists and seminarians',f:'As Archbishop of Milan, he personally ministered to plague victims when others fled. He established the first seminaries as we know them and implemented many reforms of the Council of Trent.'},
+      '11-10': {n:'St. Leo the Great',p:'Patron saint of popes',f:'He personally met Attila the Hun outside Rome in 452 and persuaded him to turn back, saving the city. He was one of only two popes called "the Great" before John Paul II.'},
+      '11-11': {n:'St. Martin of Tours',p:'Patron saint of soldiers, beggars, and winemakers',f:'As a Roman soldier, he cut his cloak in half to share with a freezing beggar. That night, Christ appeared wearing the half-cloak. He left the army saying: "I am a soldier of Christ; I cannot fight."'},
+      '11-13': {n:'St. Frances Xavier Cabrini',p:'Patron saint of immigrants',f:'She was the first U.S. citizen to be canonized. Despite a lifelong fear of water, she crossed the Atlantic over 30 times and founded 67 institutions across the Americas, Europe, and beyond.'},
+      '11-15': {n:'St. Albert the Great',p:'Patron saint of scientists and natural philosophers',f:'Teacher of St. Thomas Aquinas, he was perhaps the most learned man of his age. He wrote extensively on biology, chemistry, physics, astronomy, and geography alongside his theological works.'},
+      '11-17': {n:'St. Elizabeth of Hungary',p:'Patron saint of bakers and the homeless',f:'A princess who married at 14, she was widowed at 20 and used her dowry to build a hospital. Legend says that when her husband caught her sneaking bread to the poor, the loaves turned into roses.'},
+      '11-22': {n:'St. Cecilia',p:'Patron saint of musicians and singers',f:'According to tradition, she sang to God in her heart during her forced wedding. When martyred, the executioner struck three times but could not sever her head; she lived three more days, converting hundreds.'},
+      '11-30': {n:'St. Andrew the Apostle',p:'Patron saint of Scotland, fishermen, and Russia',f:'Peter\'s brother and the first apostle called by Jesus. He was crucified on an X-shaped cross because he felt unworthy to die on the same type of cross as Christ. This became the St. Andrew\'s Cross on Scotland\'s flag.'},
+      // December
+      '12-3': {n:'St. Francis Xavier',p:'Patron saint of missionaries and foreign missions',f:'He baptized an estimated 30,000 people across India, Southeast Asia, and Japan in just 10 years. He died on an island off the coast of China, still hoping to enter the mainland.'},
+      '12-6': {n:'St. Nicholas',p:'Patron saint of children, sailors, and gift-givers',f:'The real Santa Claus was a 4th-century bishop in modern-day Turkey. He was known for secret gift-giving — he reportedly threw bags of gold through a window to save three sisters from being sold.'},
+      '12-7': {n:'St. Ambrose',p:'Patron saint of beekeepers and learning',f:'He was elected Bishop of Milan by popular demand before he was even baptized. He had such a profound influence on St. Augustine\'s conversion that Augustine later called Ambrose his spiritual father.'},
+      '12-8': {n:'The Immaculate Conception',p:'',f:'This solemnity celebrates Mary being conceived without original sin. It is the patronal feast of the United States. The doctrine was dogmatically defined by Pope Pius IX in 1854.'},
+      '12-12': {n:'Our Lady of Guadalupe',p:'Patron saint of the Americas and the unborn',f:'In 1531, the Blessed Mother appeared to St. Juan Diego in Mexico, leaving her image on his tilma. The image, which has survived for nearly 500 years, contains details that science still cannot explain.'},
+      '12-13': {n:'St. Lucy',p:'Patron saint of the blind and eye disorders',f:'Her name means "light." According to tradition, she tore out her own eyes rather than deny her faith, and God restored them even more beautiful. Her feast falls near the winter solstice, celebrating light in darkness.'},
+      '12-14': {n:'St. John of the Cross',p:'Patron saint of mystics and contemplatives',f:'He was imprisoned for nine months by his own Carmelite brothers for supporting St. Teresa of Ávila\'s reforms. In that dark cell, he composed some of the greatest mystical poetry ever written.'},
+      '12-26': {n:'St. Stephen',p:'Patron saint of deacons and stonemasons',f:'He was the first Christian martyr, stoned to death while praying for his executioners. A young Saul — later St. Paul — watched approvingly, holding the coats of those who stoned him.'},
+      '12-27': {n:'St. John the Evangelist',p:'Patron saint of authors, editors, and friendships',f:'The "beloved disciple" was the only apostle who did not abandon Jesus at the Cross. He is traditionally credited with writing the Gospel of John, three epistles, and the Book of Revelation.'},
+      '12-28': {n:'The Holy Innocents',p:'Patron saints of babies and foundlings',f:'These were the infant boys of Bethlehem killed by King Herod in his attempt to destroy the newborn Jesus. They are venerated as the first martyrs for Christ, though they could not speak for themselves.'},
+      '12-29': {n:'St. Thomas Becket',p:'Patron saint of clergy and secular clergy',f:'Once King Henry II\'s closest friend and chancellor, he refused to let the crown control the Church after becoming Archbishop of Canterbury. Four knights murdered him in his own cathedral.'}
+    };
+
+    var now = new Date();
+    var key = (now.getMonth() + 1) + '-' + now.getDate();
+    var saint = saints[key];
+    if (saint) {
+      document.getElementById('saint-card').style.display = 'block';
+      document.getElementById('saint-name').textContent = saint.n;
+      document.getElementById('saint-patron').textContent = saint.p || '';
+      document.getElementById('saint-fact').textContent = saint.f;
+      if (!saint.p) {
+        document.getElementById('saint-patron').style.display = 'none';
+      }
     }
   })();
 

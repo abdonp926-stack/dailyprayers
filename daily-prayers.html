@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Daily Prayers">
+  <meta name="apple-mobile-web-app-title" content="Daily Readings / Prayers">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#191a1a">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23191a1a'/><text x='50' y='68' font-size='55' text-anchor='middle' fill='%23d97757'>✝</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <title>Daily Catholic Prayers</title>
+  <title>Daily Readings / Prayers</title>
   <style>
     :root {
       --accent: #d97757;
@@ -72,6 +72,14 @@
       color: var(--text-secondary);
       font-weight: 300;
       letter-spacing: 0.04em;
+    }
+
+    .liturgical-day {
+      color: var(--accent) !important;
+      font-weight: 500 !important;
+      font-size: 0.78rem !important;
+      letter-spacing: 0.03em !important;
+      margin-bottom: 0.2rem;
     }
 
     .cross {
@@ -375,7 +383,8 @@
 
 <header>
   <span class="cross">✝&#xFE0E;</span>
-  <h1>Daily Prayers</h1>
+  <h1>Daily Readings / Prayers</h1>
+  <p id="liturgical-day-label" class="liturgical-day"></p>
   <p>In nomine Patris, et Filii, et Spiritus Sancti</p>
 </header>
 
@@ -732,6 +741,126 @@
     var footer = document.querySelector('footer p');
     if (footer) {
       footer.textContent = '\u271D\uFE0E ' + seasonNames[season] + ' \u00B7 Ad Maiorem Dei Gloriam \u271D\uFE0E';
+    }
+
+    // Calculate and display the specific liturgical day name
+    function getLiturgicalDay(date) {
+      var year = date.getFullYear();
+      var easter = easterDate(year);
+      var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      var ordinals = ['','First','Second','Third','Fourth','Fifth','Sixth','Seventh',
+        'Eighth','Ninth','Tenth','Eleventh','Twelfth','Thirteenth','Fourteenth',
+        'Fifteenth','Sixteenth','Seventeenth','Eighteenth','Nineteenth','Twentieth',
+        'Twenty-First','Twenty-Second','Twenty-Third','Twenty-Fourth','Twenty-Fifth',
+        'Twenty-Sixth','Twenty-Seventh','Twenty-Eighth','Twenty-Ninth','Thirtieth',
+        'Thirty-First','Thirty-Second','Thirty-Third','Thirty-Fourth'];
+
+      var d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      var dow = d.getDay();
+      var dayName = dayNames[dow];
+
+      function daysDiff(a, b) { return Math.floor((a - b) / 86400000); }
+
+      // Key dates
+      var ashWed = new Date(easter); ashWed.setDate(easter.getDate() - 46);
+      var firstSunLent = new Date(easter); firstSunLent.setDate(easter.getDate() - 42);
+      var palmSun = new Date(easter); palmSun.setDate(easter.getDate() - 7);
+      var pentecost = new Date(easter); pentecost.setDate(easter.getDate() + 49);
+      var christmas = new Date(year, 11, 25);
+
+      // Advent start
+      var adventStart = new Date(year, 11, 25);
+      var cDay = adventStart.getDay();
+      adventStart.setDate(25 - cDay - 21);
+
+      // Baptism of the Lord
+      var jan6 = new Date(year, 0, 6);
+      var baptism = new Date(jan6);
+      if (jan6.getDay() === 0) { baptism.setDate(7); }
+      else { baptism.setDate(6 + (7 - jan6.getDay())); }
+
+      // Special named days
+      if (d.getTime() === easter.getTime()) return 'Easter Sunday';
+      if (d.getTime() === ashWed.getTime()) return 'Ash Wednesday';
+      if (d.getTime() === palmSun.getTime()) return 'Palm Sunday';
+      if (daysDiff(d, easter) === -3) return 'Holy Thursday';
+      if (daysDiff(d, easter) === -2) return 'Good Friday';
+      if (daysDiff(d, easter) === -1) return 'Holy Saturday';
+      if (d.getTime() === pentecost.getTime()) return 'Pentecost Sunday';
+      if (d.getTime() === baptism.getTime()) return 'The Baptism of the Lord';
+      if (d.getMonth() === 11 && d.getDate() === 25) return 'The Nativity of the Lord';
+      if (d.getMonth() === 0 && d.getDate() === 1) return 'Solemnity of Mary, Mother of God';
+      if (d.getMonth() === 0 && d.getDate() === 6) return 'The Epiphany of the Lord';
+
+      // Holy Week (Mon–Wed)
+      if (d > palmSun && daysDiff(d, easter) < -3) {
+        return dayName + ' of Holy Week';
+      }
+
+      // Easter Octave
+      var octaveEnd = new Date(easter); octaveEnd.setDate(easter.getDate() + 7);
+      if (d > easter && d <= octaveEnd) {
+        if (dow === 0) return 'Second Sunday of Easter';
+        return dayName + ' of the Octave of Easter';
+      }
+
+      // Lent (Ash Wed to Palm Sunday)
+      if (d > ashWed && d < palmSun) {
+        if (d < firstSunLent) return dayName + ' after Ash Wednesday';
+        var weeksIn = Math.floor(daysDiff(d, firstSunLent) / 7) + 1;
+        if (dow === 0) return ordinals[weeksIn] + ' Sunday of Lent';
+        return dayName + ' of the ' + ordinals[weeksIn] + ' Week of Lent';
+      }
+
+      // Easter season (after octave to Pentecost)
+      if (d > octaveEnd && d < pentecost) {
+        var weeksFromEaster = Math.floor(daysDiff(d, easter) / 7) + 1;
+        if (dow === 0) return ordinals[weeksFromEaster] + ' Sunday of Easter';
+        return dayName + ' of the ' + ordinals[weeksFromEaster] + ' Week of Easter';
+      }
+
+      // Advent
+      if (d >= adventStart && d < christmas) {
+        var weeksIn = Math.floor(daysDiff(d, adventStart) / 7) + 1;
+        if (dow === 0) return ordinals[weeksIn] + ' Sunday of Advent';
+        return dayName + ' of the ' + ordinals[weeksIn] + ' Week of Advent';
+      }
+
+      // Christmas season (Dec 25+ or Jan through Baptism)
+      if (d > christmas) {
+        var daysAfter = daysDiff(d, christmas);
+        if (daysAfter <= 7) return ordinals[daysAfter + 1] + ' Day of Christmas';
+        return dayName + ' of the Christmas Season';
+      }
+      if (d < baptism && d.getMonth() === 0) {
+        return dayName + ' of the Christmas Season';
+      }
+
+      // Ordinary Time — count backwards from Advent to get correct week number
+      if (d > pentecost && d < adventStart) {
+        var satBeforeAdvent = new Date(adventStart); satBeforeAdvent.setDate(adventStart.getDate() - 1);
+        var daysToEnd = daysDiff(satBeforeAdvent, d);
+        var weeksFromEnd = Math.floor(daysToEnd / 7);
+        var weekNum = 34 - weeksFromEnd;
+        if (dow === 0) return ordinals[weekNum] + ' Sunday in Ordinary Time';
+        return dayName + ' of the ' + ordinals[weekNum] + ' Week in Ordinary Time';
+      }
+
+      // Ordinary Time — early (Baptism to Ash Wednesday)
+      if (d > baptism && d < ashWed) {
+        var mondayAfterBaptism = new Date(baptism); mondayAfterBaptism.setDate(baptism.getDate() + 1);
+        var daysIn = daysDiff(d, mondayAfterBaptism);
+        var weekNum = Math.floor(daysIn / 7) + 2;
+        if (dow === 0) return ordinals[weekNum] + ' Sunday in Ordinary Time';
+        return dayName + ' of the ' + ordinals[weekNum] + ' Week in Ordinary Time';
+      }
+
+      return dayName;
+    }
+
+    var liturgicalDayLabel = document.getElementById('liturgical-day-label');
+    if (liturgicalDayLabel) {
+      liturgicalDayLabel.textContent = getLiturgicalDay(new Date());
     }
   })();
 

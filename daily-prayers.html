@@ -439,6 +439,32 @@
       .saint-name { font-size: 0.92rem; }
     }
 
+    /* Section Dividers */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 2rem 0 1rem;
+      padding: 0 0.25rem;
+    }
+
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .section-divider h2 {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
   </style>
 </head>
 <body>
@@ -456,9 +482,8 @@
   <a href="#thanksgiving">After Mass</a>
   <a href="#rosary">Rosary</a>
   <a href="#divine-mercy">Divine Mercy</a>
-  <a href="#sacred-heart">Sacred Heart</a>
-  <a href="#eternal-rest">Eternal Rest</a>
-  <a href="#miraculous-medal">Miraculous Medal</a>
+  <a href="#morning-prayers">Morning</a>
+  <a href="#evening-prayers">Evening</a>
 </nav>
 
 <main>
@@ -644,7 +669,297 @@
     </div>
   </div>
 
-  <!-- 4. Offering to the Sacred Heart -->
+  <!-- ═══════════════ MORNING PRAYERS ═══════════════ -->
+  <div class="section-divider" id="morning-prayers"><h2>Morning Prayers</h2></div>
+
+  <!-- Morning 1. Morning Offering -->
+  <div class="prayer-card" id="morning-offering">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Morning Offering<span class="subtitle">Beginning the Day</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">In the name of our Lord Jesus Christ I will begin this day. I thank You, Lord, for having preserved me during the night. I will do my best to make all I do today pleasing to You and in accordance with Your Holy Will. My dear mother Mary, watch over me this day. My Guardian Angel, take care of me. St. Joseph and all you saints of God, pray for me.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 2. Daily Offering through the Immaculate Heart -->
+  <div class="prayer-card" id="daily-offering">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Daily Offering<span class="subtitle">Through the Immaculate Heart of Mary</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">O Jesus, through the Immaculate Heart of Mary, I offer You my prayers, works, joys, and sufferings of this day in union with the Holy Sacrifice of the Mass throughout the world. I offer them for all the intentions of Your Sacred Heart: the salvation of souls, reparation for sin, and the reunion of all Christians. I offer them for the intentions of our bishops and of all Apostles of Prayer, and in particular for those recommended by our Holy Father this month.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 3. The Magnificat -->
+  <div class="prayer-card" id="magnificat">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>The Magnificat<span class="subtitle">Canticle of Mary — Luke 1:46–55</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">My soul proclaims the greatness of the Lord, my spirit rejoices in God my Savior, for He has looked with favor on His lowly servant. From this day all generations will call me blessed: the Almighty has done great things for me, and holy is His Name.</p>
+        <p class="prayer-text">He has mercy on those who fear Him in every generation. He has shown the strength of His arm, He has scattered the proud in their conceit. He has cast down the mighty from their thrones, and has lifted up the lowly.</p>
+        <p class="prayer-text">He has filled the hungry with good things, and the rich He has sent away empty. He has come to the help of His servant Israel for He has remembered His promise of mercy, the promise He made to our fathers, to Abraham and his children forever.</p>
+        <p class="prayer-text">Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be, world without end.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 4. Our Father -->
+  <div class="prayer-card" id="our-father-morning">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Our Father</h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Our Father, who art in heaven, hallowed be Thy name. Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us. And lead us not into temptation, but deliver us from evil.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 5. Three Hail Marys -->
+  <div class="prayer-card" id="hail-marys-morning">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Three Hail Marys<span class="subtitle">For Faith, Hope, and Charity</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="instruction">Pray three times, once each for the virtues of Faith, Hope, and Charity.</p>
+        <p class="prayer-text">Hail Mary, full of grace, the Lord is with thee. Blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 6. Glory Be -->
+  <div class="prayer-card" id="glory-be-morning">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Glory Be</h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be, world without end.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 7. Act of Contrition -->
+  <div class="prayer-card" id="act-of-contrition-morning">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Act of Contrition</h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">O my God, I am heartily sorry for having offended Thee, and I detest all my sins because I dread the loss of heaven and the pains of hell, but most of all because they offend Thee, my God, Who art all good and deserving of all my love. I firmly resolve, with the help of Thy grace, to confess my sins, to do penance, and to amend my life.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 8. The Jesus Prayer -->
+  <div class="prayer-card" id="jesus-prayer">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>The Jesus Prayer<span class="subtitle">The Prayer of the Heart</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Lord Jesus Christ, Son of God, have mercy on me, a sinner.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 9. The Angelus -->
+  <div class="prayer-card" id="angelus">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>The Angelus<span class="subtitle">Traditionally prayed at 6 AM, Noon, and 6 PM</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <div class="step">
+          <p class="prayer-text">V. The Angel of the Lord declared unto Mary,</p>
+          <p class="prayer-text">R. And she conceived of the Holy Spirit.</p>
+          <p class="prayer-text" style="margin-top:0.5rem;">Hail Mary, full of grace, the Lord is with thee. Blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death. Amen.</p>
+        </div>
+
+        <div class="step">
+          <p class="prayer-text">V. Behold the handmaid of the Lord,</p>
+          <p class="prayer-text">R. Be it done unto me according to Thy Word.</p>
+          <p class="prayer-text" style="margin-top:0.5rem;">Hail Mary...</p>
+        </div>
+
+        <div class="step">
+          <p class="prayer-text">V. And the Word was made flesh,</p>
+          <p class="prayer-text">R. And dwelt among us.</p>
+          <p class="prayer-text" style="margin-top:0.5rem;">Hail Mary...</p>
+        </div>
+
+        <div class="step">
+          <p class="prayer-text">V. Pray for us, O holy Mother of God,</p>
+          <p class="prayer-text">R. That we may be made worthy of the promises of Christ.</p>
+        </div>
+
+        <div class="step">
+          <span class="step-label">Let us pray</span>
+          <p class="prayer-text">Pour forth, we beseech Thee, O Lord, Thy grace into our hearts; that we, to whom the Incarnation of Christ, Thy Son, was made known by the message of an angel, may by His Passion and Cross be brought to the glory of His Resurrection, through the same Christ our Lord.</p>
+          <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 10. Prayer to St. Michael the Archangel -->
+  <div class="prayer-card" id="st-michael">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Prayer to St. Michael the Archangel<span class="subtitle">Pope Leo XIII</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">St. Michael the Archangel, defend us in battle. Be our defense against the wickedness and snares of the devil. May God rebuke him, we humbly pray, and do thou, O Prince of the heavenly hosts, by the power of God, thrust into hell Satan, and all the evil spirits, who prowl about the world seeking the ruin of souls.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 11. Prayer to Guardian Angel -->
+  <div class="prayer-card" id="guardian-angel">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Prayer to My Guardian Angel</h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Angel of God, my guardian dear, to whom God's love commits me here, ever this day be at my side, to light and guard, to rule and guide.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 12. Act of Consecration to the Blessed Virgin Mary -->
+  <div class="prayer-card" id="consecration-mary-morning">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Act of Consecration to the Blessed Virgin Mary<span class="subtitle">St. Louis de Montfort</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Oh my Lady, oh my Mother, I offer myself entirely to you. As proof of my filial affection, I consecrate to you on this day: my eyes, my ears, my tongue, my heart; in one word, my entire being. Since I am all yours, oh Good Mother, keep me and defend me as your child, and your possession.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morning 13. Sweet Mother Prayer -->
+  <div class="prayer-card" id="sweet-mother-morning">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Sweet Mother Prayer</h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Sweet Mother, do not depart, do not take your eyes off me. Come with me everywhere, and never leave me alone. Since you protect me so much, like a true Mother, may the Father, the Son, and the Holy Spirit bless me.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ EVENING PRAYERS ═══════════════ -->
+  <div class="section-divider" id="evening-prayers"><h2>Evening Prayers</h2></div>
+
+  <!-- Evening 1. Evening Thanksgiving -->
+  <div class="prayer-card" id="evening-thanksgiving">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Evening Thanksgiving<span class="subtitle">End of Day</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">My God, at the end of this day I thank You most heartily for all the graces I have received from You this day. I am sorry that I have not made better use of them. I am sorry for all the sins I have committed against You. Forgive me, O my God, and graciously protect me this night. Blessed Virgin Mary, my dear heavenly mother, take me under your protection. St. Joseph, my dear Guardian Angel, and all you saints of God, pray for me.</p>
+        <p class="prayer-text">Sweet heart of Mary, be my salvation.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evening 2. Act of Contrition -->
+  <div class="prayer-card" id="act-of-contrition-evening">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Act of Contrition</h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">O my God, I am heartily sorry for having offended Thee, and I detest all my sins because I dread the loss of heaven and the pains of hell, but most of all because they offend Thee, my God, Who art all good and deserving of all my love. I firmly resolve, with the help of Thy grace, to confess my sins, to do penance, and to amend my life.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evening 3. Our Father -->
+  <div class="prayer-card" id="our-father-evening">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Our Father</h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Our Father, who art in heaven, hallowed be Thy name. Thy kingdom come, Thy will be done, on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us. And lead us not into temptation, but deliver us from evil.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evening 4. Three Hail Marys -->
+  <div class="prayer-card" id="hail-marys-evening">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Three Hail Marys<span class="subtitle">For Faith, Hope, and Charity</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="instruction">Pray three times, once each for the virtues of Faith, Hope, and Charity.</p>
+        <p class="prayer-text">Hail Mary, full of grace, the Lord is with thee. Blessed art thou among women, and blessed is the fruit of thy womb, Jesus. Holy Mary, Mother of God, pray for us sinners, now and at the hour of our death.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evening 5. Night Prayer Invocation -->
+  <div class="prayer-card" id="night-invocation">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Night Prayer Invocation<span class="subtitle">Compline Opening</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">V. God, come to my assistance.</p>
+        <p class="prayer-text">R. Lord, make haste to help me.</p>
+        <p class="prayer-text" style="margin-top:1rem;">Glory be to the Father, and to the Son, and to the Holy Spirit. As it was in the beginning, is now, and ever shall be, world without end. Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evening 6. Offering to the Sacred Heart -->
   <div class="prayer-card" id="sacred-heart">
     <div class="prayer-header" onclick="toggle(this)">
       <h2>Offering to the Sacred Heart<span class="subtitle">Three Intentions with Glory Be</span></h2>
@@ -675,7 +990,7 @@
     </div>
   </div>
 
-  <!-- 5. Eternal Rest -->
+  <!-- Evening 7. Eternal Rest -->
   <div class="prayer-card" id="eternal-rest">
     <div class="prayer-header" onclick="toggle(this)">
       <h2>Eternal Rest<span class="subtitle">Prayer for the Faithful Departed</span></h2>
@@ -689,7 +1004,7 @@
     </div>
   </div>
 
-  <!-- 6. Prayer to Our Lady of the Miraculous Medal -->
+  <!-- Evening 8. Prayer to Our Lady of the Miraculous Medal -->
   <div class="prayer-card" id="miraculous-medal">
     <div class="prayer-header" onclick="toggle(this)">
       <h2>Prayer to Our Lady of the Miraculous Medal<span class="subtitle">The Immaculate Conception</span></h2>
@@ -701,6 +1016,34 @@
         <p class="prayer-text">Ever while wearing it, may we be blessed by your loving protection and preserved in the grace of your Son. O most powerful Virgin, Mother of our Savior, keep us close to you every moment of our lives.</p>
         <p class="prayer-text">Obtain for us, your children, the grace of a happy death; so that, in union with you, we may enjoy the bliss of heaven forever.</p>
         <p class="prayer-text" style="text-align:center; margin-top:1rem;">O Mary, conceived without sin, pray for us who have recourse to thee.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evening 9. Act of Consecration to the Blessed Virgin Mary -->
+  <div class="prayer-card" id="consecration-mary-evening">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Act of Consecration to the Blessed Virgin Mary<span class="subtitle">St. Louis de Montfort</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Oh my Lady, oh my Mother, I offer myself entirely to you. As proof of my filial affection, I consecrate to you on this day: my eyes, my ears, my tongue, my heart; in one word, my entire being. Since I am all yours, oh Good Mother, keep me and defend me as your child, and your possession.</p>
+        <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evening 10. Sweet Mother Prayer -->
+  <div class="prayer-card" id="sweet-mother-evening">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>Sweet Mother Prayer</h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+        <p class="prayer-text">Sweet Mother, do not depart, do not take your eyes off me. Come with me everywhere, and never leave me alone. Since you protect me so much, like a true Mother, may the Father, the Son, and the Holy Spirit bless me.</p>
         <p class="prayer-text" style="text-align:center; margin-top:1rem;">Amen.</p>
       </div>
     </div>

@@ -454,6 +454,7 @@
   <a href="#daily-resources">Today</a>
   <a href="#prayer-before-mass">Before Mass</a>
   <a href="#thanksgiving">After Mass</a>
+  <a href="#rosary">Rosary</a>
   <a href="#divine-mercy">Divine Mercy</a>
   <a href="#sacred-heart">Sacred Heart</a>
   <a href="#eternal-rest">Eternal Rest</a>
@@ -535,7 +536,58 @@
     </div>
   </div>
 
-  <!-- 3. Chaplet of Divine Mercy -->
+  <!-- 3. The Holy Rosary -->
+  <div class="prayer-card" id="rosary">
+    <div class="prayer-header" onclick="toggle(this)">
+      <h2>The Holy Rosary<span class="subtitle" id="rosary-mystery-subtitle">Loading...</span></h2>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="prayer-body">
+      <div class="prayer-content">
+
+        <h3>Opening</h3>
+        <p class="instruction">Make the Sign of the Cross and pray the Apostles' Creed on the crucifix.</p>
+
+        <div class="step">
+          <span class="step-label">Apostles' Creed</span>
+          <p class="prayer-text">I believe in God, the Father Almighty, Creator of heaven and earth; and in Jesus Christ, His only Son, our Lord; who was conceived by the Holy Spirit, born of the Virgin Mary; suffered under Pontius Pilate, was crucified, died and was buried. He descended into hell; the third day He rose again from the dead; He ascended into heaven, and is seated at the right hand of God the Father Almighty; from thence He shall come to judge the living and the dead. I believe in the Holy Spirit, the Holy Catholic Church, the communion of Saints, the forgiveness of sins, the resurrection of the body, and life everlasting. Amen.</p>
+        </div>
+
+        <p class="instruction">Pray one Our Father, three Hail Marys (for faith, hope, and charity), and one Glory Be.</p>
+
+        <div class="divider"></div>
+        <h3 id="rosary-mystery-title">Today's Mysteries</h3>
+
+        <div id="rosary-mysteries">
+          <!-- Filled by JS -->
+        </div>
+
+        <p class="instruction">After each decade: pray the Glory Be, then the Fatima Prayer below.</p>
+
+        <div class="step">
+          <span class="step-label">Fatima Prayer (after each decade)</span>
+          <p class="prayer-text">O my Jesus, forgive us our sins, save us from the fires of hell, lead all souls to Heaven, especially those in most need of Thy mercy.</p>
+        </div>
+
+        <div class="divider"></div>
+        <h3>Closing</h3>
+
+        <div class="step">
+          <span class="step-label">Hail Holy Queen</span>
+          <p class="prayer-text">Hail, Holy Queen, Mother of Mercy, our life, our sweetness, and our hope. To thee do we cry, poor banished children of Eve. To thee do we send up our sighs, mourning and weeping in this valley of tears. Turn then, most gracious advocate, thine eyes of mercy toward us, and after this our exile, show unto us the blessed fruit of thy womb, Jesus. O clement, O loving, O sweet Virgin Mary.</p>
+        </div>
+
+        <div class="step">
+          <span class="step-label">Final Prayer</span>
+          <p class="prayer-text">O God, whose Only Begotten Son, by His life, Death, and Resurrection, has purchased for us the rewards of eternal life, grant, we beseech Thee, that by meditating upon these mysteries of the Most Holy Rosary of the Blessed Virgin Mary, we may imitate what they contain and obtain what they promise, through the same Christ our Lord. Amen.</p>
+        </div>
+
+        <p class="instruction">End with the Sign of the Cross.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Chaplet of Divine Mercy -->
   <div class="prayer-card" id="divine-mercy">
     <div class="prayer-header" onclick="toggle(this)">
       <h2>Chaplet of Divine Mercy<span class="subtitle">Prayed on Rosary Beads</span></h2>
@@ -938,6 +990,77 @@
     if (liturgicalDayLabel) {
       liturgicalDayLabel.textContent = getLiturgicalDay(new Date());
     }
+  })();
+
+  // Rosary Mysteries of the Day
+  (function() {
+    var mysteries = {
+      joyful: {
+        name: 'Joyful Mysteries',
+        days: 'Monday & Saturday',
+        decades: [
+          {t:'First Decade', m:'The Annunciation', d:'The Angel Gabriel announces to Mary that she will conceive the Son of God.'},
+          {t:'Second Decade', m:'The Visitation', d:'Mary visits her cousin Elizabeth, who is pregnant with John the Baptist.'},
+          {t:'Third Decade', m:'The Nativity', d:'Jesus is born in a stable in Bethlehem.'},
+          {t:'Fourth Decade', m:'The Presentation', d:'Mary and Joseph present the infant Jesus in the Temple.'},
+          {t:'Fifth Decade', m:'The Finding in the Temple', d:'After three days of searching, Mary and Joseph find the twelve-year-old Jesus teaching in the Temple.'}
+        ]
+      },
+      sorrowful: {
+        name: 'Sorrowful Mysteries',
+        days: 'Tuesday & Friday',
+        decades: [
+          {t:'First Decade', m:'The Agony in the Garden', d:'Jesus prays in the Garden of Gethsemane, sweating blood in anguish.'},
+          {t:'Second Decade', m:'The Scourging at the Pillar', d:'Jesus is tied to a pillar and scourged by Roman soldiers.'},
+          {t:'Third Decade', m:'The Crowning with Thorns', d:'The soldiers place a crown of thorns on Jesus\' head and mock Him.'},
+          {t:'Fourth Decade', m:'The Carrying of the Cross', d:'Jesus carries His Cross through the streets of Jerusalem to Calvary.'},
+          {t:'Fifth Decade', m:'The Crucifixion', d:'Jesus is nailed to the Cross and dies for the salvation of the world.'}
+        ]
+      },
+      glorious: {
+        name: 'Glorious Mysteries',
+        days: 'Wednesday & Sunday',
+        decades: [
+          {t:'First Decade', m:'The Resurrection', d:'Jesus rises from the dead on the third day.'},
+          {t:'Second Decade', m:'The Ascension', d:'Jesus ascends into Heaven forty days after His Resurrection.'},
+          {t:'Third Decade', m:'The Descent of the Holy Spirit', d:'The Holy Spirit descends upon Mary and the Apostles at Pentecost.'},
+          {t:'Fourth Decade', m:'The Assumption', d:'Mary is taken body and soul into heavenly glory.'},
+          {t:'Fifth Decade', m:'The Coronation of Mary', d:'Mary is crowned Queen of Heaven and Earth.'}
+        ]
+      },
+      luminous: {
+        name: 'Luminous Mysteries',
+        days: 'Thursday',
+        decades: [
+          {t:'First Decade', m:'The Baptism of Jesus', d:'Jesus is baptized in the Jordan River and the Father\'s voice proclaims Him the Beloved Son.'},
+          {t:'Second Decade', m:'The Wedding at Cana', d:'At Mary\'s request, Jesus performs His first miracle, turning water into wine.'},
+          {t:'Third Decade', m:'The Proclamation of the Kingdom', d:'Jesus proclaims the Kingdom of God and calls all to conversion.'},
+          {t:'Fourth Decade', m:'The Transfiguration', d:'Jesus is transfigured on Mount Tabor, revealing His divine glory to Peter, James, and John.'},
+          {t:'Fifth Decade', m:'The Institution of the Eucharist', d:'At the Last Supper, Jesus gives His Body and Blood under the forms of bread and wine.'}
+        ]
+      }
+    };
+
+    // Day of week mapping: 0=Sun, 1=Mon, ..., 6=Sat
+    var dayMap = ['glorious','joyful','sorrowful','glorious','luminous','sorrowful','joyful'];
+    var today = new Date().getDay();
+    var todayMystery = mysteries[dayMap[today]];
+
+    // Set subtitle and title
+    document.getElementById('rosary-mystery-subtitle').textContent = todayMystery.name + ' (' + todayMystery.days + ')';
+    document.getElementById('rosary-mystery-title').textContent = todayMystery.name;
+
+    // Build the decades HTML
+    var container = document.getElementById('rosary-mysteries');
+    var html = '';
+    todayMystery.decades.forEach(function(decade) {
+      html += '<div class="step">';
+      html += '<span class="step-label">' + decade.t + ' — ' + decade.m + '</span>';
+      html += '<p class="prayer-text">' + decade.d + '</p>';
+      html += '<p class="instruction">Pray one Our Father, ten Hail Marys, and one Glory Be.</p>';
+      html += '</div>';
+    });
+    container.innerHTML = html;
   })();
 
   // Saint of the Day

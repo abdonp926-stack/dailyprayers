@@ -47,47 +47,14 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    header {
-      background: var(--bg-header);
-      color: var(--text);
-      text-align: center;
-      padding: 2.5rem 1.5rem 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid var(--border);
-    }
-
-    header h1 {
-      font-size: 1.15rem;
-      font-weight: 500;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-bottom: 0.35rem;
-      color: var(--text);
-    }
-
-    header p {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      font-weight: 300;
-      letter-spacing: 0.04em;
-    }
-
-    .liturgical-day {
-      color: var(--accent) !important;
-      font-weight: 500 !important;
-      font-size: 0.78rem !important;
-      letter-spacing: 0.03em !important;
-      margin-bottom: 0.2rem;
-    }
-
-    .cross {
-      font-size: 1.3rem;
-      display: block;
-      margin-bottom: 0.6rem;
-      color: var(--accent);
-      opacity: 0.8;
+    /* Fixed blurred background that covers the full page */
+    .page-bg {
+      position: fixed;
+      inset: 0;
+      background: url('hero-bg.jpg') center center / cover no-repeat;
+      filter: blur(40px) brightness(0.18) saturate(1.4);
+      transform: scale(1.15);
+      z-index: -1;
     }
 
     nav {
@@ -96,7 +63,9 @@
       justify-content: center;
       gap: 0.5rem;
       padding: 0.85rem 1rem;
-      background: var(--bg-nav);
+      background: rgba(27, 28, 28, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
@@ -129,7 +98,9 @@
     }
 
     .prayer-card {
-      background: var(--bg-card);
+      background: rgba(31, 33, 33, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border-radius: 16px;
       margin: 1rem 0;
       overflow: hidden;
@@ -215,7 +186,7 @@
       color: var(--text-secondary);
       font-size: 0.82rem;
       font-weight: 400;
-      background: var(--bg-instruction);
+      background: rgba(35, 37, 37, 0.7);
       padding: 0.7rem 1rem;
       border-radius: 10px;
       margin-top: 1.1rem;
@@ -279,12 +250,12 @@
       font-weight: 300;
       letter-spacing: 0.06em;
       border-top: 1px solid var(--border);
+      background: rgba(20, 21, 21, 0.6);
     }
 
     /* Responsive */
     @media (max-width: 480px) {
-      header { padding: 2rem 1rem 1.5rem; }
-      header h1 { font-size: 1rem; }
+      .hero { min-height: 100vh; }
       nav a { font-size: 0.68rem; padding: 0.35rem 0.75rem; }
       .prayer-header { padding: 1.1rem 1.15rem; }
       .prayer-header h2 { font-size: 0.85rem; }
@@ -324,7 +295,9 @@
     }
 
     .resource-card {
-      background: var(--bg-card);
+      background: rgba(31, 33, 33, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 1.25rem 1rem;
@@ -379,7 +352,9 @@
 
     /* Saint of the Day */
     .saint-card {
-      background: var(--bg-card);
+      background: rgba(31, 33, 33, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 1.25rem 1.5rem;
@@ -465,16 +440,119 @@
       white-space: nowrap;
     }
 
+    /* Hero Section */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: url('hero-bg.jpg') center center / cover no-repeat;
+      filter: brightness(0.3);
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+      max-width: 600px;
+    }
+
+    .hero-cross {
+      font-size: 2.5rem;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 1.25rem;
+      opacity: 0.9;
+    }
+
+    .hero-title {
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-liturgical {
+      font-size: clamp(0.85rem, 2.5vw, 1rem);
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(0.72rem, 2vw, 0.82rem);
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.55);
+      letter-spacing: 0.06em;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      transition: color 0.2s ease;
+    }
+
+    .hero-scroll:hover {
+      color: var(--accent);
+    }
+
+    .hero-scroll-arrow {
+      font-size: 1.2rem;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+
   </style>
 </head>
 <body>
 
-<header>
-  <span class="cross">✝&#xFE0E;</span>
-  <h1>Daily Readings / Prayers</h1>
-  <p id="liturgical-day-label" class="liturgical-day"></p>
-  <p>In nomine Patris, et Filii, et Spiritus Sancti</p>
-</header>
+<div class="page-bg"></div>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <span class="hero-cross">✝&#xFE0E;</span>
+    <h1 class="hero-title">Daily Readings / Prayers</h1>
+    <p class="hero-liturgical" id="liturgical-day-label"></p>
+    <p class="hero-subtitle">In nomine Patris, et Filii, et Spiritus Sancti</p>
+  </div>
+  <a href="#daily-resources" class="hero-scroll">
+    <span>Scroll</span>
+    <span class="hero-scroll-arrow">▾</span>
+  </a>
+</section>
 
 <nav>
   <a href="#daily-resources">Today</a>

@@ -52,35 +52,77 @@
       overscroll-behavior-y: none;
     }
 
-    /* Suppress transitions during orientation change to prevent jank */
-    .is-rotating *,
-    .is-rotating *::before,
-    .is-rotating *::after {
-      transition: none !important;
-      animation-duration: 0s !important;
-      animation-delay: 0s !important;
-    }
 
-    /* Fixed watercolor background */
+    /* Watercolor background - CSS blobs (GPU-accelerated) */
     .page-bg {
       position: fixed;
       inset: 0;
-      background: var(--bg);
-      z-index: -1;
+      z-index: -2;
       overflow: hidden;
-      will-change: transform;
-      transform: translate3d(0, 0, 0);
-      backface-visibility: hidden;
-      contain: strict;
+      background: var(--bg);
       pointer-events: none;
     }
-    .page-bg svg {
-      width: 100%;
-      height: 100%;
+    .wc-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
       opacity: 0.55;
-      display: block;
       will-change: transform;
-      transform: translate3d(0, 0, 0);
+    }
+    .wc-blob-1 {
+      width: 55vmax; height: 55vmax;
+      background: radial-gradient(circle, rgba(139, 58, 92, 0.9) 0%, rgba(139, 58, 92, 0) 70%);
+      top: -12%; left: -10%;
+      animation: wc-drift1 28s ease-in-out infinite alternate;
+    }
+    .wc-blob-2 {
+      width: 50vmax; height: 50vmax;
+      background: radial-gradient(circle, rgba(30, 60, 100, 0.9) 0%, rgba(30, 60, 100, 0) 70%);
+      top: -5%; right: -15%;
+      animation: wc-drift2 32s ease-in-out infinite alternate;
+    }
+    .wc-blob-3 {
+      width: 52vmax; height: 52vmax;
+      background: radial-gradient(circle, rgba(60, 35, 100, 0.85) 0%, rgba(60, 35, 100, 0) 70%);
+      top: 40%; left: 45%;
+      animation: wc-drift3 30s ease-in-out infinite alternate;
+    }
+    .wc-blob-4 {
+      width: 48vmax; height: 48vmax;
+      background: radial-gradient(circle, rgba(40, 85, 55, 0.85) 0%, rgba(40, 85, 55, 0) 70%);
+      bottom: -15%; left: 5%;
+      animation: wc-drift4 34s ease-in-out infinite alternate;
+    }
+    .wc-blob-5 {
+      width: 42vmax; height: 42vmax;
+      background: radial-gradient(circle, rgba(110, 30, 45, 0.8) 0%, rgba(110, 30, 45, 0) 70%);
+      bottom: -10%; right: -5%;
+      animation: wc-drift5 26s ease-in-out infinite alternate;
+    }
+    @keyframes wc-drift1 {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      50%  { transform: translate3d(6vw, 7vh, 0) scale(1.08); }
+      100% { transform: translate3d(-4vw, 4vh, 0) scale(0.95); }
+    }
+    @keyframes wc-drift2 {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      50%  { transform: translate3d(-6vw, -5vh, 0) scale(1.05); }
+      100% { transform: translate3d(3vw, -8vh, 0) scale(0.97); }
+    }
+    @keyframes wc-drift3 {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      50%  { transform: translate3d(5vw, -6vh, 0) scale(1.06); }
+      100% { transform: translate3d(-5vw, -3vh, 0) scale(0.94); }
+    }
+    @keyframes wc-drift4 {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      50%  { transform: translate3d(-5vw, 6vh, 0) scale(1.04); }
+      100% { transform: translate3d(4vw, -4vh, 0) scale(0.98); }
+    }
+    @keyframes wc-drift5 {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      50%  { transform: translate3d(7vw, -4vh, 0) scale(1.07); }
+      100% { transform: translate3d(-3vw, 5vh, 0) scale(0.96); }
     }
 
     nav {
@@ -518,27 +560,11 @@
 <body>
 
 <div class="page-bg">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
-    <defs>
-      <filter id="wc" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="4" seed="3" result="noise"/>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="80" xChannelSelector="R" yChannelSelector="G"/>
-      </filter>
-      <radialGradient id="bg1" cx="15%" cy="20%" r="40%"><stop offset="0%" stop-color="#6b1a3a" stop-opacity="0.55"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-      <radialGradient id="bg2" cx="82%" cy="12%" r="35%"><stop offset="0%" stop-color="#1a3a5c" stop-opacity="0.5"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-      <radialGradient id="bg3" cx="50%" cy="50%" r="40%"><stop offset="0%" stop-color="#2d1854" stop-opacity="0.4"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-      <radialGradient id="bg4" cx="18%" cy="78%" r="38%"><stop offset="0%" stop-color="#1a4a2e" stop-opacity="0.45"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-      <radialGradient id="bg5" cx="85%" cy="72%" r="32%"><stop offset="0%" stop-color="#5c1a1a" stop-opacity="0.4"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-      <radialGradient id="bg6" cx="55%" cy="92%" r="30%"><stop offset="0%" stop-color="#1a3a5c" stop-opacity="0.35"/><stop offset="100%" stop-color="transparent"/></radialGradient>
-    </defs>
-    <!-- Watercolor washes -->
-    <rect width="1000" height="1000" fill="url(#bg1)" filter="url(#wc)"/>
-    <rect width="1000" height="1000" fill="url(#bg2)" filter="url(#wc)"/>
-    <rect width="1000" height="1000" fill="url(#bg3)" filter="url(#wc)"/>
-    <rect width="1000" height="1000" fill="url(#bg4)" filter="url(#wc)"/>
-    <rect width="1000" height="1000" fill="url(#bg5)" filter="url(#wc)"/>
-    <rect width="1000" height="1000" fill="url(#bg6)" filter="url(#wc)"/>
-  </svg>
+  <div class="wc-blob wc-blob-1"></div>
+  <div class="wc-blob wc-blob-2"></div>
+  <div class="wc-blob wc-blob-3"></div>
+  <div class="wc-blob wc-blob-4"></div>
+  <div class="wc-blob wc-blob-5"></div>
 </div>
 
 <div class="title-overlay">
@@ -1670,23 +1696,6 @@
     });
   });
 
-  // Suppress transitions/animations during orientation change to prevent visual jank
-  (function() {
-    var rotateTimer;
-    function handleRotate() {
-      document.documentElement.classList.add('is-rotating');
-      clearTimeout(rotateTimer);
-      rotateTimer = setTimeout(function() {
-        document.documentElement.classList.remove('is-rotating');
-      }, 500);
-    }
-    window.addEventListener('orientationchange', handleRotate);
-    if (window.matchMedia) {
-      var mq = window.matchMedia('(orientation: portrait)');
-      if (mq.addEventListener) mq.addEventListener('change', handleRotate);
-      else if (mq.addListener) mq.addListener(handleRotate);
-    }
-  })();
 </script>
 
 </body>

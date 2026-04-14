@@ -52,6 +52,15 @@
       overscroll-behavior-y: none;
     }
 
+    /* Suppress transitions during orientation change to prevent jank */
+    .is-rotating *,
+    .is-rotating *::before,
+    .is-rotating *::after {
+      transition: none !important;
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+    }
+
     /* Fixed watercolor background */
     .page-bg {
       position: fixed;
@@ -87,6 +96,9 @@
       position: sticky;
       top: 0;
       z-index: 99;
+      transform: translate3d(0, 0, 0);
+      -webkit-transform: translate3d(0, 0, 0);
+      will-change: transform;
     }
 
     nav a {
@@ -1657,6 +1669,24 @@
       }
     });
   });
+
+  // Suppress transitions/animations during orientation change to prevent visual jank
+  (function() {
+    var rotateTimer;
+    function handleRotate() {
+      document.documentElement.classList.add('is-rotating');
+      clearTimeout(rotateTimer);
+      rotateTimer = setTimeout(function() {
+        document.documentElement.classList.remove('is-rotating');
+      }, 500);
+    }
+    window.addEventListener('orientationchange', handleRotate);
+    if (window.matchMedia) {
+      var mq = window.matchMedia('(orientation: portrait)');
+      if (mq.addEventListener) mq.addEventListener('change', handleRotate);
+      else if (mq.addListener) mq.addListener(handleRotate);
+    }
+  })();
 </script>
 
 </body>

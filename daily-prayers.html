@@ -2168,10 +2168,18 @@
   })();
 
   // Smooth scroll for nav links
+  function sectionFromHref(href) {
+    if (!href) return null;
+    var mark = href.lastIndexOf('#');
+    if (mark < 0) return null;
+    try { return document.querySelector(href.slice(mark)); }
+    catch (err) { return null; }
+  }
+
   document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', function(e) {
       e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
+      const target = sectionFromHref(this.getAttribute('href'));
       if (target) {
         // If it's a prayer card, open it first
         if (target.classList.contains('prayer-card') && !target.classList.contains('open')) {
@@ -2200,7 +2208,11 @@
 
     var navLinks = Array.prototype.slice.call(document.querySelectorAll('nav a'));
     var sections = navLinks.map(function (a) {
-      return document.querySelector(a.getAttribute('href'));
+      var href = a.getAttribute('href') || '';
+      var mark = href.lastIndexOf('#');
+      if (mark < 0) return null;
+      try { return document.querySelector(href.slice(mark)); }
+      catch (err) { return null; }
     });
 
     function setActive(index) {
